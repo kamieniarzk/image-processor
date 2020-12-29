@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">opencv101</string>
+    <string name="welcome_text">This is a real-time image processing app.</string>
+    <string name="camera_on_button">Turn on camera</string>
 </resources>
