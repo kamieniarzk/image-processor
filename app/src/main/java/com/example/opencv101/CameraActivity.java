@@ -1,6 +1,5 @@
 package com.example.opencv101;
 
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
@@ -15,43 +14,52 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.SeekBar;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
-import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-import org.opencv.imgcodecs.Imgcodecs;
+import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
+
+import static android.view.View.GONE;
 
 public class CameraActivity extends Activity implements CameraBridgeViewBase.CvCameraViewListener2 {
 
     private enum CameraMode {
-        GRAY, RGB, EDGE;
+        GRAY, RGB, EDGE, BLUR;
     }
 
     private static final String  TAG = "MainActivity";
     private CameraBridgeViewBase mOpenCvCameraView;
     private Spinner modeSpinner;
     private CameraMode cameraMode;
+    private Button flipCameraButton;
     private int mCameraId;
+    private SeekBar cannyThresholdSeekBar1;
+    private SeekBar cannyThresholdSeekBar2;
+    private double cannyThreshold1;
+    private double cannyThreshold2;
+    private TextView threshold1TextView;
+    private TextView threshold2TextView;
+    private SeekBar blurKernelSizeSeekBar;
+    private TextView blurKernelSizeTextView;
+    private int blurKernelSize;
 
 
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
         public void onManagerConnected(int status) {
-            switch (status) {
-                case LoaderCallbackInterface.SUCCESS:
-                {
-                    Log.i(TAG, "OpenCV loaded successfully");
-                    mOpenCvCameraView.enableView();
-                } break;
-                default:
-                {
-                    super.onManagerConnected(status);
-                } break;
+            if (status == LoaderCallbackInterface.SUCCESS) {
+                Log.i(TAG, "OpenCV loaded successfully");
+                mOpenCvCameraView.enableView();
+            } else {
+                super.onManagerConnected(status);
             }
         }
     };
@@ -72,9 +80,74 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
 
         setContentView(R.layout.activity_camera);
         mCameraId = 0;
-        cameraMode = CameraMode.RGB;
+        threshold1TextView = findViewById(R.id.threshold1TextView);
+        threshold2TextView = findViewById(R.id.threshold2TextView);
+        blurKernelSizeTextView = findViewById(R.id.blurKernelSizeTextView);
+        blurKernelSizeSeekBar = findViewById(R.id.blurKernelSizeSeekBar);
+        blurKernelSizeSeekBar.setProgress(1);
+        blurKernelSize = 1;
+        blurKernelSizeSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+                blurKernelSize = i;
+                blurKernelSizeTextView.setText("Blur kernel size: " + i);
+            }
 
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
         modeSpinner = findViewById(R.id.modeSpinner);
+        flipCameraButton = findViewById(R.id.flip_camera_button);
+        flipCameraButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                swapCamera();
+            }
+        });
+        cannyThresholdSeekBar1 = findViewById(R.id.cannyThreshold1SeekBar);
+        cannyThresholdSeekBar1.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+                cannyThreshold1 = i;
+                threshold1TextView.setText("Threshold 1: " + i);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+        cannyThresholdSeekBar2 = findViewById(R.id.cannyThreshold2SeekBar);
+        cannyThresholdSeekBar2.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+                cannyThreshold2 = i;
+                threshold2TextView.setText("Threshold 2: " + i);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+        cannyThresholdSeekBar2 = findViewById(R.id.cannyThreshold2SeekBar);
         final CameraMode[] cameraModes = CameraMode.values();
         ArrayAdapter<CameraMode> modeAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, cameraModes);
         modeAdapter.setDropDownViewResource(android.R.layout.simple_dropdown_item_1line);
@@ -82,7 +155,7 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
         modeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                cameraMode = cameraModes[i];
+                changeCameraMode(cameraModes[i]);
             }
 
             @Override
@@ -92,11 +165,37 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
         });
 
 
-
+        changeCameraMode(CameraMode.RGB);
 
         mOpenCvCameraView = (CameraBridgeViewBase) findViewById(R.id.cameraView);
         mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
         mOpenCvCameraView.setCvCameraViewListener(this);
+    }
+
+    private void changeCameraMode(CameraMode cameraMode) {
+        if(cameraMode == CameraMode.GRAY || cameraMode == CameraMode.RGB) {
+            cannyThresholdSeekBar1.setVisibility(GONE);
+            cannyThresholdSeekBar2.setVisibility(GONE);
+            threshold1TextView.setVisibility(GONE);
+            threshold2TextView.setVisibility(GONE);
+            blurKernelSizeSeekBar.setVisibility(GONE);
+            blurKernelSizeTextView.setVisibility(GONE);
+        }else if(cameraMode == CameraMode.EDGE) {
+            cannyThresholdSeekBar1.setVisibility(View.VISIBLE);
+            cannyThresholdSeekBar2.setVisibility(View.VISIBLE);
+            threshold1TextView.setVisibility(View.VISIBLE);
+            threshold2TextView.setVisibility(View.VISIBLE);
+            blurKernelSizeSeekBar.setVisibility(GONE);
+            blurKernelSizeTextView.setVisibility(GONE);
+        }else if(cameraMode == CameraMode.BLUR) {
+            cannyThresholdSeekBar1.setVisibility(GONE);
+            cannyThresholdSeekBar2.setVisibility(GONE);
+            threshold1TextView.setVisibility(GONE);
+            threshold2TextView.setVisibility(GONE);
+            blurKernelSizeSeekBar.setVisibility(View.VISIBLE);
+            blurKernelSizeTextView.setVisibility(View.VISIBLE);
+        }
+        this.cameraMode = cameraMode;
     }
 
     @Override
@@ -145,29 +244,42 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
                 matFrame = inputFrame.rgba();
                 break;
             }
-
             case GRAY: {
                 matFrame = inputFrame.gray();
                 break;
             }
             case EDGE: {
-                matFrame = cannyDetector(inputFrame.gray(), Filters.SOBEL_X.filter, Filters.SOBEL_Y.filter);
+                matFrame = cannyDetector(inputFrame.gray());
                 break;
             }
+            case BLUR: {
+                matFrame = inputFrame.rgba();
+                Imgproc.blur(matFrame, matFrame, new Size(blurKernelSize, blurKernelSize));
+                matFrame = blur(inputFrame.rgba());
+                break;
+            }
+
             default:
                 matFrame = inputFrame.rgba();
         }
         return matFrame;
     }
 
-    private Mat cannyDetector(Mat source, int[][] filterX, int[][] filterY) {
+    private Mat blur(Mat source) {
         Mat destination = new Mat(source.rows(),source.cols(),source.type());
-        Imgproc.Canny(source, destination, 100, 80);
+        Imgproc.blur(source, destination, new Size(blurKernelSize, blurKernelSize));
+        return destination;
+    }
+
+
+    private Mat cannyDetector(Mat source) {
+        Mat destination = new Mat(source.rows(),source.cols(),source.type());
+        Imgproc.Canny(source, destination, cannyThreshold1, cannyThreshold2);
         return destination;
     }
 
     private void swapCamera() {
-        mCameraId = mCameraId^1; //bitwise not operation to flip 1 to 0 and vice versa
+        mCameraId = mCameraId^1;
         mOpenCvCameraView.disableView();
         mOpenCvCameraView.setCameraIndex(mCameraId);
         mOpenCvCameraView.enableView();

@@ -2,4 +2,7 @@
     <string name="app_name">opencv101</string>
     <string name="welcome_text">This is a real-time image processing app.</string>
     <string name="camera_on_button">Turn on camera</string>
+    <string name="flip_camera_button">Flip camera</string>
+    <string name="threshold1">Threshold 1</string>
+    <string name="threshold2">Threshold 2</string>
 </resources>
