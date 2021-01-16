@@ -5,8 +5,8 @@
     android:id="@+id/constraintLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFAEAE"
-    android:backgroundTint="#DF6161"
+    android:background="#16205A"
+    android:backgroundTint="#000000"
     android:backgroundTintMode="screen">
 
     <TextView
@@ -26,7 +26,7 @@
         android:id="@+id/button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:backgroundTint="#AAAAAA"
+        android:backgroundTint="#FFBF00"
         android:backgroundTintMode="src_in"
         android:text="@string/camera_on_button"
         android:textAppearance="@style/TextAppearance.AppCompat.Display1"

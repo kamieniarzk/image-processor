@@ -84,11 +84,13 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
         threshold2TextView = findViewById(R.id.threshold2TextView);
         blurKernelSizeTextView = findViewById(R.id.blurKernelSizeTextView);
         blurKernelSizeSeekBar = findViewById(R.id.blurKernelSizeSeekBar);
-        blurKernelSizeSeekBar.setProgress(1);
         blurKernelSize = 1;
         blurKernelSizeSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+                if(i == 0) {
+                    i = 1;
+                }
                 blurKernelSize = i;
                 blurKernelSizeTextView.setText("Blur kernel size: " + i);
             }
@@ -172,7 +174,8 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
         mOpenCvCameraView.setCvCameraViewListener(this);
     }
 
-    private void changeCameraMode(CameraMode cameraMode) {
+    private void changeCameraMode(CameraMode camMode) {
+        this.cameraMode = camMode;
         if(cameraMode == CameraMode.GRAY || cameraMode == CameraMode.RGB) {
             cannyThresholdSeekBar1.setVisibility(GONE);
             cannyThresholdSeekBar2.setVisibility(GONE);
@@ -195,7 +198,6 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
             blurKernelSizeSeekBar.setVisibility(View.VISIBLE);
             blurKernelSizeTextView.setVisibility(View.VISIBLE);
         }
-        this.cameraMode = cameraMode;
     }
 
     @Override
