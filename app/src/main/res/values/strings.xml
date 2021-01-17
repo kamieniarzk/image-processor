@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">opencv101</string>
+    <string name="app_name">Real time image processing</string>
     <string name="welcome_text">Real time image processing</string>
     <string name="camera_on_button">Start camera</string>
     <string name="flip_camera_button">Flip camera</string>

@@ -1,4 +1,4 @@
-package com.example.opencv101;
+package com.example.rt_image_processing;
 
 import android.content.Context;
 
