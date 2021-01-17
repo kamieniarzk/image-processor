@@ -4,6 +4,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -26,6 +27,8 @@ import org.opencv.android.OpenCVLoader;
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
+
+import java.util.Objects;
 
 import static android.view.View.GONE;
 
@@ -50,6 +53,12 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
     private SeekBar blurKernelSizeSeekBar;
     private TextView blurKernelSizeTextView;
     private int blurKernelSize;
+
+    // FPS counter
+    private TextView fpsTextView;
+    private int mFPS;
+    private long startTime = 0;
+    private long currentTime = 1000;
 
 
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
@@ -78,18 +87,27 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
             ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.CAMERA}, 100);
         }
 
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+
+            }
+        });
+
+
         setContentView(R.layout.activity_camera);
         mCameraId = 0;
         threshold1TextView = findViewById(R.id.threshold1TextView);
         threshold2TextView = findViewById(R.id.threshold2TextView);
+        fpsTextView = (TextView) findViewById(R.id.fpsTextView);
         blurKernelSizeTextView = findViewById(R.id.blurKernelSizeTextView);
         blurKernelSizeSeekBar = findViewById(R.id.blurKernelSizeSeekBar);
         blurKernelSize = 1;
         blurKernelSizeSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-                if(i == 0) {
-                    i = 1;
+                if(i % 2 == 0) {
+                    i++;
                 }
                 blurKernelSize = i;
                 blurKernelSizeTextView.setText("Blur kernel size: " + i);
@@ -264,12 +282,27 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
             default:
                 matFrame = inputFrame.rgba();
         }
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (currentTime - startTime >= 1000) {
+                    if(fpsTextView != null) {
+                        fpsTextView.setText("FPS: " + mFPS);
+                    }
+                    mFPS = 0;
+                    startTime = System.currentTimeMillis();
+                }
+                currentTime = System.currentTimeMillis();
+                mFPS += 1;
+            }
+        });
+
         return matFrame;
     }
 
     private Mat blur(Mat source) {
         Mat destination = new Mat(source.rows(),source.cols(),source.type());
-        Imgproc.blur(source, destination, new Size(blurKernelSize, blurKernelSize));
+        Imgproc.GaussianBlur(source, destination, new Size(blurKernelSize, blurKernelSize), 0);
         return destination;
     }
 

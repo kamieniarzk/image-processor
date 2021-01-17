@@ -5,7 +5,7 @@
     android:id="@+id/constraintLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#16205A"
+    android:background="#000520"
     android:backgroundTint="#000000"
     android:backgroundTintMode="screen">
 
@@ -26,8 +26,11 @@
         android:id="@+id/button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="200dp"
         android:backgroundTint="#FFBF00"
         android:backgroundTintMode="src_in"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
         android:text="@string/camera_on_button"
         android:textAppearance="@style/TextAppearance.AppCompat.Display1"
         app:layout_constraintBottom_toBottomOf="parent"

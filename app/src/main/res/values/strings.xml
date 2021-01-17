@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">opencv101</string>
     <string name="welcome_text">Real time image processing</string>
-    <string name="camera_on_button">Turn on camera</string>
+    <string name="camera_on_button">Start camera</string>
     <string name="flip_camera_button">Flip camera</string>
     <string name="threshold1">Threshold 1</string>
     <string name="threshold2">Threshold 2</string>
