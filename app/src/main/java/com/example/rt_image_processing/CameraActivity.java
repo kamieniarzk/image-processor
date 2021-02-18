@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.Window;
@@ -23,9 +24,20 @@ import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
+import org.opencv.core.Core;
+import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfByte;
+import org.opencv.core.MatOfFloat;
+import org.opencv.core.MatOfPoint;
+import org.opencv.core.MatOfPoint2f;
+import org.opencv.core.Point;
+import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
+import org.opencv.video.Video;
+
+import java.util.List;
 
 import static android.view.View.GONE;
 
@@ -50,6 +62,16 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
     private SeekBar blurKernelSizeSeekBar;
     private TextView blurKernelSizeTextView;
     private int blurKernelSize;
+
+    private int mViewMode;
+    private Mat mRgba;
+    private Mat mIntermediateMat;
+    private Mat mGray;
+    private Mat mPrevGray;
+    MatOfPoint2f prevFeatures, nextFeatures;
+    MatOfPoint features;
+    MatOfByte status;
+    MatOfFloat err;
 
     // FPS counter
     private TextView fpsTextView;
@@ -215,6 +237,16 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
         }
     }
 
+    private void resetVars(){
+        mPrevGray = new Mat(mGray.rows(), mGray.cols(), CvType.
+                CV_8UC1);
+        features = new MatOfPoint();
+        prevFeatures = new MatOfPoint2f();
+        nextFeatures = new MatOfPoint2f();
+        status = new MatOfByte();
+        err = new MatOfFloat();
+    }
+
     @Override
     public void onPause()
     {
@@ -245,56 +277,113 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
 
     @Override
     public void onCameraViewStarted(int width, int height) {
-
+        mRgba = new Mat(height, width, CvType.CV_8UC4);
+        mIntermediateMat = new Mat(height, width, CvType.CV_8UC4);
+        mGray = new Mat(height, width, CvType.CV_8UC1);
+        resetVars();
     }
 
     @Override
     public void onCameraViewStopped() {
-
+        mRgba.release();
+        mGray.release();
+        mIntermediateMat.release();
     }
 
     @Override
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
         Mat matFrame;
-        switch(cameraMode) {
-            case RGB: {
-                matFrame = inputFrame.rgba();
-                break;
-            }
-            case GRAY: {
-                matFrame = inputFrame.gray();
-                break;
-            }
-            case EDGE: {
-                matFrame = cannyDetector(inputFrame.gray());
-                break;
-            }
-            case BLUR: {
-                matFrame = inputFrame.rgba();
-                Imgproc.blur(matFrame, matFrame, new Size(blurKernelSize, blurKernelSize));
-                matFrame = blur(inputFrame.rgba());
-                break;
-            }
+//        switch(cameraMode) {
+//            case RGB: {
+//                matFrame = inputFrame.rgba();
+//                break;
+//            }
+//            case GRAY: {
+//                matFrame = inputFrame.gray();
+//                break;
+//            }
+//            case EDGE: {
+//                matFrame = cannyDetector(inputFrame.gray());
+//                break;
+//            }
+//            case BLUR: {
+//                matFrame = inputFrame.rgba();
+//                Imgproc.blur(matFrame, matFrame, new Size(blurKernelSize, blurKernelSize));
+//                matFrame = blur(inputFrame.rgba());
+//                break;
+//            }
+//
+//            default:
+//                matFrame = inputFrame.rgba();
+//        }
+//        runOnUiThread(new Runnable() {
+//            @Override
+//            public void run() {
+//                if (currentTime - startTime >= 1000) {
+//                    if(fpsTextView != null) {
+//                        fpsTextView.setText("FPS: " + mFPS);
+//                    }
+//                    mFPS = 0;
+//                    startTime = System.currentTimeMillis();
+//                }
+//                currentTime = System.currentTimeMillis();
+//                mFPS += 1;
+//            }
+//        });
 
-            default:
-                matFrame = inputFrame.rgba();
+
+//        mGray = inputFrame.gray();
+//        if(features.toArray().length==0){
+//            int rowStep = 50, colStep = 100;
+//            int nRows = mGray.rows()/rowStep, nCols = mGray.
+//                    cols()/colStep;
+//            Point points[] = new Point[nRows*nCols];
+//            for(int i=0; i<nRows; i++){
+//                for(int j=0; j<nCols; j++){
+//                    points[i*nCols+j]=new Point(j*colStep,
+//                            i*rowStep);
+//                }
+//            }
+//            features.fromArray(points);
+//            prevFeatures.fromList(features.toList());
+//            mPrevGray = mGray.clone();
+//            return mGray;
+//        }
+//        nextFeatures.fromArray(prevFeatures.toArray());
+//        Video.calcOpticalFlowPyrLK(mPrevGray, mGray,
+//                prevFeatures, nextFeatures, status, err);
+//
+//        List<Point> prevList=features.toList(),
+//                nextList=nextFeatures.toList();
+//        Scalar color = new Scalar(255);
+//        for(int i = 0; i<prevList.size(); i++){
+//            Imgproc.line(mGray, prevList.get(i), nextList.get(i),
+//                    color);
+//        }
+//        mPrevGray = mGray.clone();
+//
+//        return mGray;
+
+        mGray = inputFrame.gray();
+        if(features.toArray().length==0){
+            Imgproc.goodFeaturesToTrack(mGray, features,
+                    10, 0.01, 10);
+            prevFeatures.fromList(features.toList());
+            mPrevGray = mGray.clone();
+            return mGray;
         }
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                if (currentTime - startTime >= 1000) {
-                    if(fpsTextView != null) {
-                        fpsTextView.setText("FPS: " + mFPS);
-                    }
-                    mFPS = 0;
-                    startTime = System.currentTimeMillis();
-                }
-                currentTime = System.currentTimeMillis();
-                mFPS += 1;
-            }
-        });
+        Video.calcOpticalFlowPyrLK(mPrevGray, mGray,
+                prevFeatures, nextFeatures, status, err);
+        List<Point> drawFeature = nextFeatures.toList();
+        for(int i = 0; i<drawFeature.size(); i++){
+            Point p = drawFeature.get(i);
+            Imgproc.circle(mGray, p, 5, new Scalar(255));
+        }
+        mPrevGray = mGray.clone();
+        prevFeatures.fromList(nextFeatures.toList());
+        return mGray;
 
-        return matFrame;
+//        return matFrame;
     }
 
     private Mat blur(Mat source) {
