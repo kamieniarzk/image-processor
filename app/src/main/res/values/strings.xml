@@ -6,4 +6,5 @@
     <string name="threshold1">Threshold 1</string>
     <string name="threshold2">Threshold 2</string>
     <string name="blurKernelSize">Blur kernel size</string>
+    <string name="reset_features_button">Reset features to track</string>
 </resources>

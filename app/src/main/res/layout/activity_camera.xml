@@ -107,5 +107,17 @@
         app:layout_constraintStart_toEndOf="@+id/modeSpinner"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <Button
+        android:id="@+id/reset_features_flow"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:text="@string/reset_features_button"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

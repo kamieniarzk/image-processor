@@ -8,7 +8,6 @@ import android.app.Activity;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.MenuItem;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.Window;
@@ -34,17 +33,19 @@ import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
+import org.opencv.core.TermCriteria;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.video.Video;
 
-import java.util.List;
+import java.util.ArrayList;
+import java.util.Random;
 
 import static android.view.View.GONE;
 
 public class CameraActivity extends Activity implements CameraBridgeViewBase.CvCameraViewListener2 {
 
     private enum CameraMode {
-        GRAY, RGB, EDGE, BLUR;
+        GRAY, RGB, EDGE, BLUR, MOTION_FLOW
     }
 
     private static final String  TAG = "MainActivity";
@@ -62,16 +63,7 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
     private SeekBar blurKernelSizeSeekBar;
     private TextView blurKernelSizeTextView;
     private int blurKernelSize;
-
-    private int mViewMode;
-    private Mat mRgba;
-    private Mat mIntermediateMat;
-    private Mat mGray;
-    private Mat mPrevGray;
-    MatOfPoint2f prevFeatures, nextFeatures;
-    MatOfPoint features;
-    MatOfByte status;
-    MatOfFloat err;
+    private Button resetFeaturesToTrack;
 
     // FPS counter
     private TextView fpsTextView;
@@ -79,6 +71,11 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
     private long startTime = 0;
     private long currentTime = 1000;
 
+    Scalar[] colors;
+    Random rng;
+    Mat prevGray, currRgb, currGray, drawingMask;
+    MatOfPoint p0MatofPoint;
+    MatOfPoint2f prevFeatures, nextFeatures;
 
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
@@ -92,8 +89,6 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
         }
     };
 
-
-    /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         Log.i(TAG, "called onCreate");
@@ -105,14 +100,6 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
                 == PackageManager.PERMISSION_DENIED) {
             ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.CAMERA}, 100);
         }
-
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-
-            }
-        });
-
 
         setContentView(R.layout.activity_camera);
         mCameraId = 0;
@@ -144,12 +131,9 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
         });
         modeSpinner = findViewById(R.id.modeSpinner);
         flipCameraButton = findViewById(R.id.flip_camera_button);
-        flipCameraButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                swapCamera();
-            }
-        });
+        flipCameraButton.setOnClickListener(view -> swapCamera());
+        resetFeaturesToTrack = findViewById(R.id.reset_features_flow);
+        resetFeaturesToTrack.setOnClickListener(view -> resetMotionFlow());
         cannyThresholdSeekBar1 = findViewById(R.id.cannyThreshold1SeekBar);
         cannyThresholdSeekBar1.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -203,49 +187,57 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
             }
         });
 
-
         changeCameraMode(CameraMode.RGB);
 
         mOpenCvCameraView = (CameraBridgeViewBase) findViewById(R.id.cameraView);
         mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
         mOpenCvCameraView.setCvCameraViewListener(this);
+        mOpenCvCameraView.enableFpsMeter();
     }
 
     private void changeCameraMode(CameraMode camMode) {
         this.cameraMode = camMode;
-        if(cameraMode == CameraMode.GRAY || cameraMode == CameraMode.RGB) {
-            cannyThresholdSeekBar1.setVisibility(GONE);
-            cannyThresholdSeekBar2.setVisibility(GONE);
-            threshold1TextView.setVisibility(GONE);
-            threshold2TextView.setVisibility(GONE);
-            blurKernelSizeSeekBar.setVisibility(GONE);
-            blurKernelSizeTextView.setVisibility(GONE);
-        }else if(cameraMode == CameraMode.EDGE) {
-            cannyThresholdSeekBar1.setVisibility(View.VISIBLE);
-            cannyThresholdSeekBar2.setVisibility(View.VISIBLE);
-            threshold1TextView.setVisibility(View.VISIBLE);
-            threshold2TextView.setVisibility(View.VISIBLE);
-            blurKernelSizeSeekBar.setVisibility(GONE);
-            blurKernelSizeTextView.setVisibility(GONE);
-        }else if(cameraMode == CameraMode.BLUR) {
-            cannyThresholdSeekBar1.setVisibility(GONE);
-            cannyThresholdSeekBar2.setVisibility(GONE);
-            threshold1TextView.setVisibility(GONE);
-            threshold2TextView.setVisibility(GONE);
-            blurKernelSizeSeekBar.setVisibility(View.VISIBLE);
-            blurKernelSizeTextView.setVisibility(View.VISIBLE);
+        switch (camMode) {
+            case GRAY:
+            case RGB:
+                cannyThresholdSeekBar1.setVisibility(GONE);
+                cannyThresholdSeekBar2.setVisibility(GONE);
+                threshold1TextView.setVisibility(GONE);
+                threshold2TextView.setVisibility(GONE);
+                blurKernelSizeSeekBar.setVisibility(GONE);
+                blurKernelSizeTextView.setVisibility(GONE);
+                resetFeaturesToTrack.setVisibility(GONE);
+                break;
+            case EDGE:
+                cannyThresholdSeekBar1.setVisibility(View.VISIBLE);
+                cannyThresholdSeekBar2.setVisibility(View.VISIBLE);
+                threshold1TextView.setVisibility(View.VISIBLE);
+                threshold2TextView.setVisibility(View.VISIBLE);
+                blurKernelSizeSeekBar.setVisibility(GONE);
+                blurKernelSizeTextView.setVisibility(GONE);
+                resetFeaturesToTrack.setVisibility(GONE);
+                break;
+            case BLUR:
+                cannyThresholdSeekBar1.setVisibility(GONE);
+                cannyThresholdSeekBar2.setVisibility(GONE);
+                threshold1TextView.setVisibility(GONE);
+                threshold2TextView.setVisibility(GONE);
+                blurKernelSizeSeekBar.setVisibility(View.VISIBLE);
+                blurKernelSizeTextView.setVisibility(View.VISIBLE);
+                resetFeaturesToTrack.setVisibility(GONE);
+                break;
+            case MOTION_FLOW:
+                cannyThresholdSeekBar1.setVisibility(GONE);
+                cannyThresholdSeekBar2.setVisibility(GONE);
+                threshold1TextView.setVisibility(GONE);
+                threshold2TextView.setVisibility(GONE);
+                blurKernelSizeSeekBar.setVisibility(GONE);
+                blurKernelSizeTextView.setVisibility(GONE);
+                resetFeaturesToTrack.setVisibility(View.VISIBLE);
         }
+
     }
 
-    private void resetVars(){
-        mPrevGray = new Mat(mGray.rows(), mGray.cols(), CvType.
-                CV_8UC1);
-        features = new MatOfPoint();
-        prevFeatures = new MatOfPoint2f();
-        nextFeatures = new MatOfPoint2f();
-        status = new MatOfByte();
-        err = new MatOfFloat();
-    }
 
     @Override
     public void onPause()
@@ -277,113 +269,65 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
 
     @Override
     public void onCameraViewStarted(int width, int height) {
-        mRgba = new Mat(height, width, CvType.CV_8UC4);
-        mIntermediateMat = new Mat(height, width, CvType.CV_8UC4);
-        mGray = new Mat(height, width, CvType.CV_8UC1);
-        resetVars();
+        colors = new Scalar[100];
+        rng = new Random();
+        for(int i = 0 ; i < 100 ; i++) {
+            int r = rng.nextInt(256);
+            int g = rng.nextInt(256);
+            int b = rng.nextInt(256);
+            colors[i] = new Scalar(r, g, b);
+        }
     }
 
     @Override
     public void onCameraViewStopped() {
-        mRgba.release();
-        mGray.release();
-        mIntermediateMat.release();
+        currGray.release();
+        currRgb.release();
+        prevGray.release();
     }
 
     @Override
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
         Mat matFrame;
-//        switch(cameraMode) {
-//            case RGB: {
-//                matFrame = inputFrame.rgba();
-//                break;
-//            }
-//            case GRAY: {
-//                matFrame = inputFrame.gray();
-//                break;
-//            }
-//            case EDGE: {
-//                matFrame = cannyDetector(inputFrame.gray());
-//                break;
-//            }
-//            case BLUR: {
-//                matFrame = inputFrame.rgba();
-//                Imgproc.blur(matFrame, matFrame, new Size(blurKernelSize, blurKernelSize));
-//                matFrame = blur(inputFrame.rgba());
-//                break;
-//            }
-//
-//            default:
-//                matFrame = inputFrame.rgba();
-//        }
-//        runOnUiThread(new Runnable() {
-//            @Override
-//            public void run() {
-//                if (currentTime - startTime >= 1000) {
-//                    if(fpsTextView != null) {
-//                        fpsTextView.setText("FPS: " + mFPS);
-//                    }
-//                    mFPS = 0;
-//                    startTime = System.currentTimeMillis();
-//                }
-//                currentTime = System.currentTimeMillis();
-//                mFPS += 1;
-//            }
-//        });
+        switch(cameraMode) {
+            case RGB: {
+                matFrame = inputFrame.rgba();
+                break;
+            }
+            case GRAY: {
+                matFrame = inputFrame.gray();
+                break;
+            }
+            case EDGE: {
+                matFrame = cannyDetector(inputFrame.gray());
+                break;
+            }
+            case BLUR: {
+                matFrame = inputFrame.rgba();
+                Imgproc.blur(matFrame, matFrame, new Size(blurKernelSize, blurKernelSize));
+                matFrame = blur(inputFrame.rgba());
+                break;
+            }
+            case MOTION_FLOW:
+                matFrame = motionFlow(inputFrame);
+                break;
 
-
-//        mGray = inputFrame.gray();
-//        if(features.toArray().length==0){
-//            int rowStep = 50, colStep = 100;
-//            int nRows = mGray.rows()/rowStep, nCols = mGray.
-//                    cols()/colStep;
-//            Point points[] = new Point[nRows*nCols];
-//            for(int i=0; i<nRows; i++){
-//                for(int j=0; j<nCols; j++){
-//                    points[i*nCols+j]=new Point(j*colStep,
-//                            i*rowStep);
-//                }
-//            }
-//            features.fromArray(points);
-//            prevFeatures.fromList(features.toList());
-//            mPrevGray = mGray.clone();
-//            return mGray;
-//        }
-//        nextFeatures.fromArray(prevFeatures.toArray());
-//        Video.calcOpticalFlowPyrLK(mPrevGray, mGray,
-//                prevFeatures, nextFeatures, status, err);
-//
-//        List<Point> prevList=features.toList(),
-//                nextList=nextFeatures.toList();
-//        Scalar color = new Scalar(255);
-//        for(int i = 0; i<prevList.size(); i++){
-//            Imgproc.line(mGray, prevList.get(i), nextList.get(i),
-//                    color);
-//        }
-//        mPrevGray = mGray.clone();
-//
-//        return mGray;
-
-        mGray = inputFrame.gray();
-        if(features.toArray().length==0){
-            Imgproc.goodFeaturesToTrack(mGray, features,
-                    10, 0.01, 10);
-            prevFeatures.fromList(features.toList());
-            mPrevGray = mGray.clone();
-            return mGray;
+            default:
+                matFrame = inputFrame.rgba();
         }
-        Video.calcOpticalFlowPyrLK(mPrevGray, mGray,
-                prevFeatures, nextFeatures, status, err);
-        List<Point> drawFeature = nextFeatures.toList();
-        for(int i = 0; i<drawFeature.size(); i++){
-            Point p = drawFeature.get(i);
-            Imgproc.circle(mGray, p, 5, new Scalar(255));
-        }
-        mPrevGray = mGray.clone();
-        prevFeatures.fromList(nextFeatures.toList());
-        return mGray;
+        runOnUiThread(() -> {
+            if (currentTime - startTime >= 1000) {
+                if(fpsTextView != null) {
+                    fpsTextView.setText("FPS: " + mFPS);
+                }
+                mFPS = 0;
+                startTime = System.currentTimeMillis();
+            }
+            currentTime = System.currentTimeMillis();
+            mFPS += 1;
+        });
 
-//        return matFrame;
+        return matFrame;
     }
 
     private Mat blur(Mat source) {
@@ -392,11 +336,48 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
         return destination;
     }
 
-
     private Mat cannyDetector(Mat source) {
         Mat destination = new Mat(source.rows(),source.cols(),source.type());
         Imgproc.Canny(source, destination, cannyThreshold1, cannyThreshold2);
         return destination;
+    }
+
+    private Mat motionFlow(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
+        // if on first frame, initialize features to track
+        if(prevGray == null) {
+            prevGray = inputFrame.gray();
+            p0MatofPoint = new MatOfPoint();
+            Imgproc.goodFeaturesToTrack(prevGray, p0MatofPoint, 100, 0.3, 7, new Mat(), 7, false, 0.04);
+            prevFeatures = new MatOfPoint2f(p0MatofPoint.toArray());
+            nextFeatures = new MatOfPoint2f();
+            drawingMask = Mat.zeros(inputFrame.rgba().size(), inputFrame.rgba().type());
+            return inputFrame.rgba();
+        }
+        currRgb = inputFrame.rgba();
+        currGray = inputFrame.gray();
+        MatOfByte status = new MatOfByte();
+        MatOfFloat error = new MatOfFloat();
+        TermCriteria criteria = new TermCriteria(TermCriteria.COUNT + TermCriteria.EPS, 10,0.03);
+        if(!prevFeatures.empty() && prevGray.size().equals(currGray.size())) {
+            Video.calcOpticalFlowPyrLK(prevGray, currGray, prevFeatures, nextFeatures, status, error, new Size(15,15),2, criteria);
+            byte[] statusArray = status.toArray();
+            Point[] prevFeaturesArray = prevFeatures.toArray();
+            Point[] nextFeaturesArray = nextFeatures.toArray();
+            ArrayList<Point> newPointsToTrack = new ArrayList<>();
+            for (int i = 0; i < statusArray.length ; i++) {
+                if (statusArray[i] == 1) {
+                    newPointsToTrack.add(nextFeaturesArray[i]);
+                    Imgproc.line(drawingMask, nextFeaturesArray[i], prevFeaturesArray[i], colors[i], 2);
+                    Imgproc.circle(currRgb, nextFeaturesArray[i],5, colors[i],-1);
+                }
+            }
+            Core.add(currRgb, drawingMask, currRgb);
+            Point[] newPointsToTrackArray = new Point[newPointsToTrack.size()];
+            newPointsToTrackArray = newPointsToTrack.toArray(newPointsToTrackArray);
+            prevFeatures = new MatOfPoint2f(newPointsToTrackArray);
+        }
+        prevGray = currGray.clone();
+        return currRgb;
     }
 
     private void swapCamera() {
@@ -406,4 +387,11 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
         mOpenCvCameraView.enableView();
     }
 
+    private void resetMotionFlow() {
+        p0MatofPoint = new MatOfPoint();
+        Imgproc.goodFeaturesToTrack(prevGray, p0MatofPoint, 100, 0.3, 7, new Mat(), 7, false, 0.04);
+        prevFeatures = new MatOfPoint2f(p0MatofPoint.toArray());
+        nextFeatures = new MatOfPoint2f();
+        drawingMask = Mat.zeros(prevGray.size(), currRgb.type());
+    }
 }
