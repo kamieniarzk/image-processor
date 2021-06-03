@@ -5,7 +5,9 @@ import androidx.core.content.ContextCompat;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Context;
 import android.content.pm.PackageManager;
+import android.os.BatteryManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.SurfaceView;
@@ -24,7 +26,6 @@ import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.core.Core;
-import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
 import org.opencv.core.MatOfFloat;
@@ -64,6 +65,7 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
     private TextView blurKernelSizeTextView;
     private int blurKernelSize;
     private Button resetFeaturesToTrack;
+    private BatteryManager bm;
 
     // FPS counter
     private TextView fpsTextView;
@@ -188,6 +190,8 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
         });
 
         changeCameraMode(CameraMode.RGB);
+
+        bm = (BatteryManager) getSystemService(Context.BATTERY_SERVICE);
 
         mOpenCvCameraView = (CameraBridgeViewBase) findViewById(R.id.cameraView);
         mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
