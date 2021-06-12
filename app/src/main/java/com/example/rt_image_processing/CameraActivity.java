@@ -103,11 +103,16 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
             ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.CAMERA}, 100);
         }
 
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
+                == PackageManager.PERMISSION_DENIED) {
+            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.RECORD_AUDIO}, 100);
+        }
+
         setContentView(R.layout.activity_camera);
         mCameraId = 0;
         threshold1TextView = findViewById(R.id.threshold1TextView);
         threshold2TextView = findViewById(R.id.threshold2TextView);
-        fpsTextView = (TextView) findViewById(R.id.fpsTextView);
+        fpsTextView = findViewById(R.id.fpsTextView);
         blurKernelSizeTextView = findViewById(R.id.blurKernelSizeTextView);
         blurKernelSizeSeekBar = findViewById(R.id.blurKernelSizeSeekBar);
         blurKernelSize = 1;
@@ -193,7 +198,7 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
 
         bm = (BatteryManager) getSystemService(Context.BATTERY_SERVICE);
 
-        mOpenCvCameraView = (CameraBridgeViewBase) findViewById(R.id.cameraView);
+        mOpenCvCameraView = findViewById(R.id.cameraView);
         mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
         mOpenCvCameraView.setCvCameraViewListener(this);
         mOpenCvCameraView.enableFpsMeter();
@@ -285,9 +290,11 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
 
     @Override
     public void onCameraViewStopped() {
-        currGray.release();
-        currRgb.release();
-        prevGray.release();
+        if (currRgb != null) {
+            currRgb.release();
+            currGray.release();
+            prevGray.release();
+        }
     }
 
     @Override

@@ -11,8 +11,9 @@
         android:id="@+id/cameraView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        opencv:show_fps="true"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        opencv:show_fps="true" />
 
     <Spinner
         android:id="@+id/modeSpinner"

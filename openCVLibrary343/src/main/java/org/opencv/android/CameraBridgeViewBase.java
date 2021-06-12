@@ -15,11 +15,8 @@ import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Rect;
-import android.media.MediaRecorder;
-import android.os.Build;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
@@ -30,8 +27,7 @@ import android.view.SurfaceView;
  * frame to the screen.
  * The clients shall implement CvCameraViewListener.
  */
-public abstract class
-CameraBridgeViewBase extends SurfaceView implements SurfaceHolder.Callback {
+public abstract class CameraBridgeViewBase extends SurfaceView implements SurfaceHolder.Callback {
 
     private static final String TAG = "CameraBridge";
     private static final int MAX_UNSPECIFIED = -1;
@@ -53,8 +49,6 @@ CameraBridgeViewBase extends SurfaceView implements SurfaceHolder.Callback {
     protected int mCameraIndex = CAMERA_ID_ANY;
     protected boolean mEnabled;
     protected FpsMeter mFpsMeter = null;
-    protected MediaRecorder mRecorder;
-    protected Surface mSurface = null;
 
     public static final int CAMERA_ID_ANY   = -1;
     public static final int CAMERA_ID_BACK  = 99;
@@ -86,14 +80,6 @@ CameraBridgeViewBase extends SurfaceView implements SurfaceHolder.Callback {
         mMaxWidth = MAX_UNSPECIFIED;
         mMaxHeight = MAX_UNSPECIFIED;
         styledAttrs.recycle();
-    }
-
-    @android.support.annotation.RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-    public void setRecorder(MediaRecorder rec) {
-        mRecorder = rec;
-        if (mRecorder != null) {
-            mSurface = mRecorder.getSurface();
-        }
     }
 
     /**
@@ -164,8 +150,8 @@ CameraBridgeViewBase extends SurfaceView implements SurfaceHolder.Callback {
         }
 
         public Mat onCameraFrame(CvCameraViewFrame inputFrame) {
-             Mat result = null;
-             switch (mPreviewFormat) {
+            Mat result = null;
+            switch (mPreviewFormat) {
                 case RGBA:
                     result = mOldStyleListener.onCameraFrame(inputFrame.rgba());
                     break;
@@ -266,7 +252,7 @@ CameraBridgeViewBase extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     public void disableFpsMeter() {
-            mFpsMeter = null;
+        mFpsMeter = null;
     }
 
     /**
@@ -331,30 +317,30 @@ CameraBridgeViewBase extends SurfaceView implements SurfaceHolder.Callback {
     private void processEnterState(int state) {
         Log.d(TAG, "call processEnterState: " + state);
         switch(state) {
-        case STARTED:
-            onEnterStartedState();
-            if (mListener != null) {
-                mListener.onCameraViewStarted(mFrameWidth, mFrameHeight);
-            }
-            break;
-        case STOPPED:
-            onEnterStoppedState();
-            if (mListener != null) {
-                mListener.onCameraViewStopped();
-            }
-            break;
+            case STARTED:
+                onEnterStartedState();
+                if (mListener != null) {
+                    mListener.onCameraViewStarted(mFrameWidth, mFrameHeight);
+                }
+                break;
+            case STOPPED:
+                onEnterStoppedState();
+                if (mListener != null) {
+                    mListener.onCameraViewStopped();
+                }
+                break;
         };
     }
 
     private void processExitState(int state) {
         Log.d(TAG, "call processExitState: " + state);
         switch(state) {
-        case STARTED:
-            onExitStartedState();
-            break;
-        case STOPPED:
-            onExitStoppedState();
-            break;
+            case STARTED:
+                onExitStartedState();
+                break;
+            case STOPPED:
+                onExitStoppedState();
+                break;
         };
     }
 
@@ -421,7 +407,7 @@ CameraBridgeViewBase extends SurfaceView implements SurfaceHolder.Callback {
         }
 
         if (bmpValid && mCacheBitmap != null) {
-            Canvas canvas;
+            Canvas canvas = getHolder().lockCanvas();
             if (canvas != null) {
                 canvas.drawColor(0, android.graphics.PorterDuff.Mode.CLEAR);
                 if (BuildConfig.DEBUG)
@@ -429,16 +415,16 @@ CameraBridgeViewBase extends SurfaceView implements SurfaceHolder.Callback {
 
                 if (mScale != 0) {
                     canvas.drawBitmap(mCacheBitmap, new Rect(0,0,mCacheBitmap.getWidth(), mCacheBitmap.getHeight()),
-                         new Rect((int)((canvas.getWidth() - mScale*mCacheBitmap.getWidth()) / 2),
-                         (int)((canvas.getHeight() - mScale*mCacheBitmap.getHeight()) / 2),
-                         (int)((canvas.getWidth() - mScale*mCacheBitmap.getWidth()) / 2 + mScale*mCacheBitmap.getWidth()),
-                         (int)((canvas.getHeight() - mScale*mCacheBitmap.getHeight()) / 2 + mScale*mCacheBitmap.getHeight())), null);
+                            new Rect((int)((canvas.getWidth() - mScale*mCacheBitmap.getWidth()) / 2),
+                                    (int)((canvas.getHeight() - mScale*mCacheBitmap.getHeight()) / 2),
+                                    (int)((canvas.getWidth() - mScale*mCacheBitmap.getWidth()) / 2 + mScale*mCacheBitmap.getWidth()),
+                                    (int)((canvas.getHeight() - mScale*mCacheBitmap.getHeight()) / 2 + mScale*mCacheBitmap.getHeight())), null);
                 } else {
-                     canvas.drawBitmap(mCacheBitmap, new Rect(0,0,mCacheBitmap.getWidth(), mCacheBitmap.getHeight()),
-                         new Rect((canvas.getWidth() - mCacheBitmap.getWidth()) / 2,
-                         (canvas.getHeight() - mCacheBitmap.getHeight()) / 2,
-                         (canvas.getWidth() - mCacheBitmap.getWidth()) / 2 + mCacheBitmap.getWidth(),
-                         (canvas.getHeight() - mCacheBitmap.getHeight()) / 2 + mCacheBitmap.getHeight()), null);
+                    canvas.drawBitmap(mCacheBitmap, new Rect(0,0,mCacheBitmap.getWidth(), mCacheBitmap.getHeight()),
+                            new Rect((canvas.getWidth() - mCacheBitmap.getWidth()) / 2,
+                                    (canvas.getHeight() - mCacheBitmap.getHeight()) / 2,
+                                    (canvas.getWidth() - mCacheBitmap.getWidth()) / 2 + mCacheBitmap.getWidth(),
+                                    (canvas.getHeight() - mCacheBitmap.getHeight()) / 2 + mCacheBitmap.getHeight()), null);
                 }
 
                 if (mFpsMeter != null) {

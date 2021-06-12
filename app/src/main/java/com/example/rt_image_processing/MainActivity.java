@@ -7,33 +7,31 @@ import android.content.Intent;
 
 import android.os.Bundle;
 
-
-import android.view.View;
-
 import android.widget.Button;
 
 public class MainActivity extends Activity {
-    private Button button;
+    private Button cameraButton;
+    private Button galleryButton;
 
 
     public MainActivity() {
 
     }
 
-    /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        initializeButtons();
+    }
 
-        button = findViewById(R.id.button);
-        button.setOnClickListener(new View.OnClickListener() {
-           @Override
-           public void onClick(View view) {
-               openCamera();
-           }
-        });
+    private void initializeButtons() {
+        galleryButton = findViewById(R.id.galleryButton);
+        galleryButton.setOnClickListener(view -> openGallery());
+
+        cameraButton = findViewById(R.id.button);
+        cameraButton.setOnClickListener(view -> openCamera());
     }
 
     private void openCamera() {
@@ -41,5 +39,8 @@ public class MainActivity extends Activity {
         startActivity(intent);
     }
 
-
+    private void openGallery() {
+        Intent intent = new Intent(this, GalleryActivity.class);
+        startActivity(intent);
+    }
 }
