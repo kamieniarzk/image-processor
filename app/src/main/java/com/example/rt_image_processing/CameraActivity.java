@@ -26,6 +26,7 @@ import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.core.Core;
+import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
 import org.opencv.core.MatOfFloat;
@@ -66,6 +67,8 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
     private int blurKernelSize;
     private Button resetFeaturesToTrack;
     private BatteryManager bm;
+    private Mat matFrame;
+    Mat thresh;
 
     // FPS counter
     private TextView fpsTextView;
@@ -286,6 +289,7 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
             int b = rng.nextInt(256);
             colors[i] = new Scalar(r, g, b);
         }
+        thresh = new Mat();
     }
 
     @Override
@@ -299,7 +303,7 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
 
     @Override
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
-        Mat matFrame;
+
         switch(cameraMode) {
             case RGB: {
                 matFrame = inputFrame.rgba();
@@ -314,9 +318,9 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
                 break;
             }
             case BLUR: {
-                matFrame = inputFrame.rgba();
-                Imgproc.blur(matFrame, matFrame, new Size(blurKernelSize, blurKernelSize));
-                matFrame = blur(inputFrame.rgba());
+//                matFrame = inputFrame.rgba();
+//                matFrame = blur(matFrame);
+                matFrame = threshold(inputFrame.rgba());
                 break;
             }
             case MOTION_FLOW:
@@ -343,7 +347,8 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
 
     private Mat blur(Mat source) {
         Mat destination = new Mat(source.rows(),source.cols(),source.type());
-        Imgproc.GaussianBlur(source, destination, new Size(blurKernelSize, blurKernelSize), 0);
+//        Imgproc.GaussianBlur(source, destination, new Size(3, 3), 0);
+        Imgproc.blur(source, destination, new Size(3, 3));
         return destination;
     }
 
@@ -351,6 +356,14 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
         Mat destination = new Mat(source.rows(),source.cols(),source.type());
         Imgproc.Canny(source, destination, cannyThreshold1, cannyThreshold2);
         return destination;
+    }
+
+    private Mat threshold(Mat source) {
+        Imgproc.cvtColor(source, source, Imgproc.COLOR_BGR2HSV);
+
+        Core.inRange(source, new Scalar(0, 0, 0),
+                new Scalar(100, 100, 100), thresh);
+        return thresh;
     }
 
     private Mat motionFlow(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {

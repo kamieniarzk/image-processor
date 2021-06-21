@@ -8,10 +8,11 @@ import android.content.Intent;
 import android.os.Bundle;
 
 import android.widget.Button;
+import android.widget.ImageButton;
 
 public class MainActivity extends Activity {
     private Button cameraButton;
-    private Button galleryButton;
+    private ImageButton galleryButton;
 
 
     public MainActivity() {
@@ -30,7 +31,7 @@ public class MainActivity extends Activity {
         galleryButton = findViewById(R.id.galleryButton);
         galleryButton.setOnClickListener(view -> openGallery());
 
-        cameraButton = findViewById(R.id.button);
+        cameraButton = findViewById(R.id.cameraButton);
         cameraButton.setOnClickListener(view -> openCamera());
     }
 

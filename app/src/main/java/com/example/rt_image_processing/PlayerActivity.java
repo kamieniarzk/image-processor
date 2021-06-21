@@ -16,7 +16,7 @@ import com.google.android.exoplayer2.util.Util;
 
 public class PlayerActivity extends Activity {
 
-    long videoId;
+    private long videoId;
     private PlayerView playerView;
     private SimpleExoPlayer player;
 

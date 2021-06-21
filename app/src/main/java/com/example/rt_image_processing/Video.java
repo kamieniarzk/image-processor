@@ -10,8 +10,6 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 public class Video {
-    long id;
-    Uri data;
-    String title;
-    String duration;
+    private long id;
+    private Uri data;
 }

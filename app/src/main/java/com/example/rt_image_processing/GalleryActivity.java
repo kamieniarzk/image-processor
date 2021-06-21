@@ -16,7 +16,6 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
-import java.util.Locale;
 
 public class GalleryActivity extends Activity {
 
@@ -27,7 +26,6 @@ public class GalleryActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_gallery);
-
         initializeViews();
         checkPermissions();
         initVideos();
@@ -53,34 +51,16 @@ public class GalleryActivity extends Activity {
     }
 
     private void initVideos() {
-        String[] projection = {MediaStore.Video.Media._ID, MediaStore.Video.Media.DISPLAY_NAME, MediaStore.Video.Media.DURATION};
+        String[] projection = {MediaStore.Video.Media._ID};
         String sortOrder = MediaStore.Video.Media.DATE_ADDED + " DESC";
 
         Cursor cursor = getApplication().getContentResolver().query(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, projection, null, null, sortOrder);
         if (cursor != null) {
             int idColumn = cursor.getColumnIndexOrThrow(MediaStore.Video.Media._ID);
-            int titleColumn = cursor.getColumnIndexOrThrow(MediaStore.Video.Media.DISPLAY_NAME);
-            int durationColumn = cursor.getColumnIndexOrThrow(MediaStore.Video.Media.DURATION);
-
             while (cursor.moveToNext()) {
                 long id = cursor.getLong(idColumn);
-                String title = cursor.getString(titleColumn);
-                int duration = cursor.getInt(durationColumn);
-
                 Uri data = ContentUris.withAppendedId(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, id);
-
-                String duration_formatted;
-                int sec = (duration / 1000) % 60;
-                int min = (duration / (1000 * 60)) % 60;
-                int hrs = duration / (1000 * 60 * 60);
-
-                if (hrs == 0) {
-                    duration_formatted = String.valueOf(min).concat(":".concat(String.format(Locale.UK, "%02d", sec)));
-                } else {
-                    duration_formatted = String.valueOf(hrs).concat(":".concat(String.format(Locale.UK, "%02d", min).concat(":".concat(String.format(Locale.UK, "%02d", sec)))));
-                }
-
-                videosList.add(new Video(id, data, title, duration_formatted));
+                videosList.add(new Video(id, data));
                 runOnUiThread(() -> adapterVideoList.notifyItemInserted(videosList.size() - 1));
             }
             cursor.close();

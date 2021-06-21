@@ -6,7 +6,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -34,8 +33,6 @@ public class VideoAdapter extends RecyclerView.Adapter<VideoAdapter.VideoViewHol
     @Override
     public void onBindViewHolder(@NonNull VideoViewHolder holder, int position) {
         final Video item = videosList.get(position);
-        holder.titleTextView.setText(item.getTitle());
-        holder.durationTextView.setText(item.getDuration());
         Glide.with(context).load(item.getData()).into(holder.imgView_thumbnail);
 
         holder.itemView.setOnClickListener(view -> {
@@ -52,13 +49,9 @@ public class VideoAdapter extends RecyclerView.Adapter<VideoAdapter.VideoViewHol
 
     static class VideoViewHolder extends RecyclerView.ViewHolder {
         ImageView imgView_thumbnail;
-        TextView titleTextView;
-        TextView durationTextView;
 
         public VideoViewHolder(@NonNull View itemView) {
             super(itemView);
-            titleTextView = itemView.findViewById(R.id.titleTextView);
-            durationTextView = itemView.findViewById(R.id.durationTextView);
             imgView_thumbnail = itemView.findViewById(R.id.thumbnailImageView);
         }
     }
