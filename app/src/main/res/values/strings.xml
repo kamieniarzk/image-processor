@@ -11,4 +11,10 @@
     <string name="title">Title</string>
     <string name="length">"00:00:00</string>
     <string name="thumbnail">Video thumbnail</string>
+    <string name="filtering_paragraph">This is the initial stage of processing, the input is unmodified image from camera (or video). One of several filtering methods can be chosen, along with the size of the filter kernel.</string>
+    <string name="filter_method">Choose filter</string>
+    <string name="filter_size">Choose filter size</string>
+    <string name="averaging">This is done by convolving image with a normalized box filter. It simply takes the average of all the pixels under kernel area and replace the central element.</string>
+    <string name="gaussian">This is done by convolving image with a Gaussian filter. The standard deviation of the kernel is 0 in both axes.</string>
+    <string name="median">In this case, the function takes median of all the pixels under kernel area and central element is replaced with this median value.</string>
 </resources>

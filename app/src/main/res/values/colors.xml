@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#A1A1A1</color>
-    <color name="colorPrimaryDark">#4C4C4C</color>
+    <color name="colorPrimary">#085732</color>
+    <color name="colorSecondary">#081B57</color>
     <color name="colorAccent">#006C2B</color>
+<!--    $mdc-theme-primary: #085732;-->
+<!--    $mdc-theme-secondary: #081B57;-->
 
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>

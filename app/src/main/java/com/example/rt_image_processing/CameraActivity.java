@@ -26,7 +26,6 @@ import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.core.Core;
-import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
 import org.opencv.core.MatOfFloat;
@@ -139,7 +138,7 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
 
             }
         });
-        modeSpinner = findViewById(R.id.modeSpinner);
+        modeSpinner = findViewById(R.id.filterModeSpinner);
         flipCameraButton = findViewById(R.id.flip_camera_button);
         flipCameraButton.setOnClickListener(view -> swapCamera());
         resetFeaturesToTrack = findViewById(R.id.reset_features_flow);
