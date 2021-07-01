@@ -36,7 +36,7 @@ public class MainActivity extends Activity {
     private int mFilterSize;
 
     public enum FilterMode {
-        AVERAGING, GAUSSIAN, MEDIAN
+        NONE, AVERAGING, GAUSSIAN, MEDIAN
     }
 
     public MainActivity() {
@@ -71,7 +71,14 @@ public class MainActivity extends Activity {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 mFilterMode = filterModes[i];
-                mFilterDescriptionTextView.setText(KERNEL_TYPES[i]);
+                if (mFilterMode == FilterMode.NONE) {
+                    mFilterDescriptionTextView.setVisibility(View.GONE);
+                    filterSizeSpinner.setVisibility(View.GONE);
+                } else {
+                    mFilterDescriptionTextView.setText(KERNEL_TYPES[i-1]);
+                    mFilterDescriptionTextView.setVisibility(View.VISIBLE);
+                    filterSizeSpinner.setVisibility(View.VISIBLE);
+                }
             }
             @Override
             public void onNothingSelected(AdapterView<?> adapterView) {

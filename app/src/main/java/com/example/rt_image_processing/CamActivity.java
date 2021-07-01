@@ -37,8 +37,6 @@ public class CamActivity extends Activity implements CameraBridgeViewBase.CvCame
         setContentView(R.layout.activity_cam);
         checkPermissions();
         initializeLoaderCallback();
-
-        setContentView(R.layout.activity_camera);
     }
 
     @Override
