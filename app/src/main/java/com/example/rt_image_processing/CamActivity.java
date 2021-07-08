@@ -2,34 +2,43 @@ package com.example.rt_image_processing;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.SurfaceView;
 
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+
+import com.example.rt_image_processing.model.ColorSpace;
+import com.example.rt_image_processing.model.FilterMode;
 
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
+import org.opencv.core.Core;
 import org.opencv.core.Mat;
+import org.opencv.core.Scalar;
+import org.opencv.core.Size;
+import org.opencv.imgproc.Imgproc;
 
 public class CamActivity extends Activity implements CameraBridgeViewBase.CvCameraViewListener2 {
 
     private static final String  TAG = "MainActivity";
 
-
     private BaseLoaderCallback mLoaderCallback;
     private CameraBridgeViewBase mOpenCvCameraView;
-    private int mKernelSize;
-
-    private enum FilterMode {
-        AVERAGING, GAUSSIAN, MEDIAN
-    }
-
-
+    private int mKernelSizeInt;
+    private Size mKernelSize;
+    private int mHueValue;
+    private int mHueRadius;
+    private ColorSpace mColorSpace;
     private FilterMode mFilterMode;
+    private Mat mCurrentFrame;
+    private Mat mThresholdMask;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,6 +46,7 @@ public class CamActivity extends Activity implements CameraBridgeViewBase.CvCame
         setContentView(R.layout.activity_cam);
         checkPermissions();
         initializeLoaderCallback();
+        initializeMembers();
     }
 
     @Override
@@ -70,7 +80,49 @@ public class CamActivity extends Activity implements CameraBridgeViewBase.CvCame
 
     @Override
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
-        return null;
+        mCurrentFrame = colorSpace(inputFrame);
+        filter(mCurrentFrame);
+        return threshold(mCurrentFrame);
+    }
+
+    private void filter(Mat input) {
+        switch (mFilterMode) {
+            case AVERAGING: {
+                Imgproc.blur(input, input, mKernelSize);
+                break;
+            }
+            case GAUSSIAN: {
+                Imgproc.GaussianBlur(input, input, mKernelSize, 0);
+                break;
+            }
+            case MEDIAN: {
+                Imgproc.medianBlur(input, input, mKernelSizeInt);
+                break;
+            }
+        }
+    }
+
+    private Mat colorSpace(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
+        switch (mColorSpace) {
+            case RGB:
+                return inputFrame.rgba();
+            case GRAY:
+                return inputFrame.gray();
+            case HSV:
+                mCurrentFrame = inputFrame.rgba();
+                Imgproc.cvtColor(mCurrentFrame, mCurrentFrame, Imgproc.COLOR_BGR2HSV);
+                break;
+        }
+        return mCurrentFrame;
+    }
+
+    private Mat threshold(Mat input) {
+        Mat frameHSV = new Mat();
+        Imgproc.cvtColor(input, frameHSV, Imgproc.COLOR_BGR2HSV);
+        Mat thresh = new Mat();
+        Core.inRange(frameHSV, new Scalar(mHueValue - mHueRadius, 100, 100),
+                new Scalar(mHueValue + mHueRadius, 100, 100), thresh);
+        return thresh;
     }
 
     private void checkPermissions() {
@@ -86,6 +138,10 @@ public class CamActivity extends Activity implements CameraBridgeViewBase.CvCame
     }
 
     private void initializeLoaderCallback() {
+        mOpenCvCameraView = findViewById(R.id.camView);
+        mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
+        mOpenCvCameraView.setCvCameraViewListener(this);
+
         mLoaderCallback = new BaseLoaderCallback(this) {
             @Override
             public void onManagerConnected(int status) {
@@ -97,5 +153,13 @@ public class CamActivity extends Activity implements CameraBridgeViewBase.CvCame
                 }
             }
         };
+    }
+
+    private void initializeMembers() {
+        Intent intent = getIntent();
+        mKernelSizeInt = intent.getIntExtra("kernelSize", 3);
+        mKernelSize = new Size(mKernelSizeInt, mKernelSizeInt);
+        mFilterMode = FilterMode.of(intent.getIntExtra("filterMode", -1));
+        mColorSpace = ColorSpace.of(intent.getIntExtra("colorSpace", -1));
     }
 }

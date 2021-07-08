@@ -4,6 +4,7 @@
     android:id="@+id/card"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:layout_marginVertical="3dp"
     app:layout_constraintBottom_toTopOf="@id/cameraButton"
     app:layout_constraintTop_toBottomOf="@id/textView"
     app:layout_constraintEnd_toEndOf="parent"
@@ -11,7 +12,11 @@
     android:clickable="true"
     android:focusable="true"
     app:cardElevation="1dp"
-    app:shapeAppearance="?attr/shapeAppearanceMediumComponent">
+    app:shapeAppearance="?attr/shapeAppearanceMediumComponent"
+    app:cardCornerRadius="12dp"
+    app:contentPadding="16dp"
+    app:strokeWidth="2dp"
+    app:strokeColor="@color/grey">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -19,69 +24,61 @@
         android:orientation="vertical"
         android:animateLayoutChanges="true">
         <TextView
+            android:textAlignment="center"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/filtering_paragraph"
+            android:text="@string/thresholding"
             android:scaleType="centerCrop"
             android:layout_margin="8dp"
             />
         <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="8dp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:layout_gravity="center_horizontal"
-            android:orientation="horizontal">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/filter_method"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toStartOf="@id/filterSizeSpinner" />
-
-            <Spinner
-                android:id="@+id/filterModeSpinner"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:theme="@style/AppTheme"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"/>
-        </LinearLayout>
-        <TextView
-            android:id="@+id/filterDescriptionText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/filtering_paragraph"
-            android:scaleType="centerCrop"
             android:layout_margin="8dp"
-            />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <View
+                android:id="@+id/hueGradientView"
+                android:layout_width="150dp"
+                android:layout_height="150dp"/>
+
+            <com.google.android.material.slider.Slider
+                android:id="@+id/hueSlider"
+                android:stepSize="1"
+                android:valueFrom="0.0"
+                android:valueTo="179.0"
+                android:layout_height="wrap_content"
+                android:layout_width="match_parent"/>
+        </LinearLayout>
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="8dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            android:layout_gravity="center_horizontal"
-            android:orientation="horizontal">
-
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
             <TextView
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/filter_size"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toStartOf="@id/filterSizeSpinner" />
+                android:text="@string/threshold_radius"
+                android:textAlignment="center"
+                android:scaleType="centerCrop"
+                android:layout_margin="8dp"
+                />
 
-            <Spinner
-                android:id="@+id/filterSizeSpinner"
-                android:layout_width="wrap_content"
+            <com.google.android.material.slider.Slider
+                android:id="@+id/thresholdRadius"
+                android:stepSize="1"
+                android:valueFrom="1.0"
+                android:valueTo="60.0"
                 android:layout_height="wrap_content"
-                android:theme="@style/AppTheme"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="@id/filterModeSpinner" />
-
+                android:layout_width="match_parent"/>
         </LinearLayout>
+
     </LinearLayout>
 
 </com.google.android.material.card.MaterialCardView>

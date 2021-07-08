@@ -4,13 +4,16 @@
     android:id="@+id/card"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:layout_marginVertical="3dp"
     app:layout_constraintEnd_toEndOf="parent"
     app:layout_constraintStart_toStartOf="parent"
     android:clickable="true"
     android:focusable="true"
-    android:layout_margin="8dp"
     app:shapeAppearance="?attr/shapeAppearanceMediumComponent"
-    app:cardForegroundColor="@color/grey">
+    app:cardCornerRadius="12dp"
+    app:contentPadding="16dp"
+    app:strokeWidth="2dp"
+    app:strokeColor="@color/grey">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -18,15 +21,16 @@
         android:orientation="vertical"
         android:animateLayoutChanges="true">
         <TextView
+            android:textAlignment="center"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/color_space"
+            android:text="@string/color_space_hint"
             android:scaleType="centerCrop"
             android:layout_margin="8dp"
             />
 
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="8dp"
             app:layout_constraintStart_toStartOf="parent"
@@ -34,22 +38,11 @@
             android:layout_gravity="center_horizontal"
             android:orientation="horizontal">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/pick_color"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toStartOf="@id/colorSpaceSpinner" />
-
-            <Spinner
-                android:id="@+id/colorSpaceSpinner"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:theme="@style/AppTheme"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="@id/colorSpaceSpinner" />
+            <include layout="@layout/color_space_spinner"/>
 
         </LinearLayout>
+
+
     </LinearLayout>
 
 </com.google.android.material.card.MaterialCardView>
