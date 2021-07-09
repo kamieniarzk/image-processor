@@ -28,7 +28,8 @@
         android:theme="@style/AppTheme">
         <activity android:name=".PlayerActivity"></activity>
         <activity android:name=".GalleryActivity" />
-        <activity android:name=".CamActivity"/>
+        <activity android:name=".CamActivity"
+            android:screenOrientation="landscape"/>
         <activity
             android:name=".CameraActivity"
             android:configChanges="orientation|screenSize" />

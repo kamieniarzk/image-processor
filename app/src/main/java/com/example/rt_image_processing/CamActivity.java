@@ -38,7 +38,7 @@ public class CamActivity extends Activity implements CameraBridgeViewBase.CvCame
     private FilterMode mFilterMode;
     private Mat mCurrentFrame;
     private Mat mThresholdMask;
-
+    private Mat mThresh;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -103,26 +103,20 @@ public class CamActivity extends Activity implements CameraBridgeViewBase.CvCame
     }
 
     private Mat colorSpace(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
-        switch (mColorSpace) {
-            case RGB:
-                return inputFrame.rgba();
-            case GRAY:
-                return inputFrame.gray();
-            case HSV:
-                mCurrentFrame = inputFrame.rgba();
-                Imgproc.cvtColor(mCurrentFrame, mCurrentFrame, Imgproc.COLOR_BGR2HSV);
-                break;
+        if (mColorSpace == ColorSpace.COLOR) {
+            return inputFrame.rgba();
         }
-        return mCurrentFrame;
+        return inputFrame.gray();
     }
 
     private Mat threshold(Mat input) {
-        Mat frameHSV = new Mat();
-        Imgproc.cvtColor(input, frameHSV, Imgproc.COLOR_BGR2HSV);
-        Mat thresh = new Mat();
-        Core.inRange(frameHSV, new Scalar(mHueValue - mHueRadius, 100, 100),
-                new Scalar(mHueValue + mHueRadius, 100, 100), thresh);
-        return thresh;
+        if (mThresh == null) {
+            mThresh = new Mat();
+        }
+        Imgproc.cvtColor(input, input, Imgproc.COLOR_BGR2HSV);
+        Core.inRange(input, new Scalar(mHueValue - mHueRadius, 0, 0),
+                new Scalar(mHueValue + mHueRadius, 255, 255), mThresh);
+        return mThresh;
     }
 
     private void checkPermissions() {

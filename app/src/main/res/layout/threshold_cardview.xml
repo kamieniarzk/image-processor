@@ -46,10 +46,9 @@
                 android:layout_height="150dp"/>
 
             <com.google.android.material.slider.Slider
-                android:id="@+id/hueSlider"
+                android:id="@+id/thresholdSlider"
+                app:tickVisible="false"
                 android:stepSize="1"
-                android:valueFrom="0.0"
-                android:valueTo="179.0"
                 android:layout_height="wrap_content"
                 android:layout_width="match_parent"/>
         </LinearLayout>
@@ -71,7 +70,8 @@
                 />
 
             <com.google.android.material.slider.Slider
-                android:id="@+id/thresholdRadius"
+                android:id="@+id/radiusSlider"
+                app:tickVisible="false"
                 android:stepSize="1"
                 android:valueFrom="1.0"
                 android:valueTo="60.0"

@@ -18,7 +18,7 @@
     <string name="gaussian">This is done by convolving image with a Gaussian filter. The standard deviation of the kernel is 0 in both axes.</string>
     <string name="median">In this case, the function takes median of all the pixels under kernel area and central element is replaced with this median value.</string>
     <string name="thresholding">Image thresholding - in this stage of processing, a binary mask is created from the input, after applying thresholding on a given range.</string>
-    <string name="color_space_hint">The input image can be converted to a chosen color space.</string>
+    <string name="color_space_hint">The input can be either processed in color or transformed to grayscale.</string>
     <string name="color_space_label">Color space</string>
     <string name="pick_size">Specify kernel size</string>
     <string name="threshold_radius">Specify the radius of hue values to look for</string>
