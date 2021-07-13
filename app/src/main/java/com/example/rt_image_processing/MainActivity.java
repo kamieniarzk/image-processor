@@ -19,6 +19,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.rt_image_processing.model.ColorSpace;
 import com.example.rt_image_processing.model.FilterMode;
+import com.example.rt_image_processing.processor.ImageProcessor;
 import com.google.android.material.slider.Slider;
 
 import java.util.List;
@@ -27,17 +28,24 @@ public class MainActivity extends AppCompatActivity {
     private static final List<Integer> KERNEL_SIZES = List.of(3, 5, 7, 9);
     private static final int[] KERNEL_TYPES = new int[]{R.string.averaging, R.string.gaussian, R.string.median};
 
+
     private TextView mFilterDescriptionTextView;
     private LinearLayout mFilterSizeSelectorLayout;
+    private LinearLayout mHsvSlidersLayout;
+    private LinearLayout mGraySlidersLayout;
     private int mKernelSize;
     private ColorSpace mColorSpace;
     private FilterMode mFilterMode;
-    private Slider mHueSlider;
-    private Slider mRadiusSlider;
-    private int mThresholdValue;
-    private View mHueGradientView;
+    private float mGrayValue;
+    private float mGrayValueRadius;
+    private float mHue;
+    private float mSaturation;
+    private float mValue;
+    private float mHueRadius;
+    private float mValueRadius;
+    private float mSaturationRadius;
+    private float mMinContourArea = 0.1f;
     private GradientDrawable mGradientDrawable;
-    private int mThresholdingRadius;
 
     public MainActivity() {
 
@@ -47,7 +55,6 @@ public class MainActivity extends AppCompatActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         initializeLayout();
     }
 
@@ -57,8 +64,8 @@ public class MainActivity extends AppCompatActivity {
         initializeKernelSizeSpinner();
         initializeColorSpaceSpinner();
         initializeGradientView();
-        initializeThresholdSlider();
-        initializeRadiusSlider();
+        initializeHsvSliders();
+        initializeGraySliders();
     }
 
     private void initializeButtons() {
@@ -78,8 +85,14 @@ public class MainActivity extends AppCompatActivity {
         intent.putExtra("kernelSize", mKernelSize);
         intent.putExtra("filterMode", mFilterMode.getValue());
         intent.putExtra("colorSpace", mColorSpace.getValue());
-        intent.putExtra("hueValue", mThresholdValue);
-        intent.putExtra("hueRadius", mThresholdingRadius);
+        intent.putExtra("hue", mHue);
+        intent.putExtra("hueRadius", mHueRadius);
+        intent.putExtra("saturation", mSaturation);
+        intent.putExtra("saturationRadius", mSaturationRadius);
+        intent.putExtra("value", mValue);
+        intent.putExtra("valueRadius", mValueRadius);
+        intent.putExtra("grayValue", mGrayValue);
+        intent.putExtra("grayValueRadius", mGrayValueRadius);
         startActivity(intent);
         Toast.makeText(MainActivity.this, "put filterMode as " + mFilterMode.getValue(), Toast.LENGTH_LONG);
     }
@@ -129,73 +142,112 @@ public class MainActivity extends AppCompatActivity {
         colorSpaceSpinner.setAdapter(colorSpaceAdapter);
         colorSpaceSpinner.setOnItemClickListener((adapterView, view, i, l) -> {
             mColorSpace = colorSpaces[i];
-            Toast.makeText(MainActivity.this, "colorSpace = " + mColorSpace.name(), Toast.LENGTH_SHORT).show();
+            if (mColorSpace == ColorSpace.COLOR) {
+                mHsvSlidersLayout.setVisibility(View.VISIBLE);
+                mGraySlidersLayout.setVisibility(View.GONE);
+            } else {
+                mHsvSlidersLayout.setVisibility(View.GONE);
+                mGraySlidersLayout.setVisibility(View.VISIBLE);
+            }
         });
     }
 
     private void initializeGradientView() {
         mGradientDrawable = new GradientDrawable(
                 GradientDrawable.Orientation.LEFT_RIGHT,
-                new int[] {normalizeColor(0), convertColorSpace(255)});
+                new int[] {normalizeGray(0), normalizeGray(255)});
 
-        mHueGradientView = findViewById(R.id.hueGradientView);
-        mHueGradientView.setBackground(mGradientDrawable);
+        View gradientView = findViewById(R.id.gradientView);
+        gradientView.setBackground(mGradientDrawable);
     }
 
-    private void initializeThresholdSlider() {
-        mHueSlider = findViewById(R.id.thresholdSlider);
-        mHueSlider.addOnChangeListener((slider, value, fromUser) -> {
-            mThresholdValue = (int) value;
-            setGradientColor(value);
+    private void initializeGraySliders() {
+        mGraySlidersLayout = findViewById(R.id.graySlidersLayout);
+
+        Slider grayValueSlider = findViewById(R.id.grayValueSlider);
+        grayValueSlider.addOnChangeListener((slider, value, fromUser) -> {
+            mGrayValue = value;
+            setGradientColor();
         });
 
-        mHueSlider.setValueFrom(0);
+        Slider grayValueRadiusSlider = findViewById(R.id.grayValueRadiusSlider);
+        grayValueRadiusSlider.addOnChangeListener((slider, value, fromUser) -> {
+            mGrayValueRadius = value;
+            setGradientColor();
+        });
+    }
 
+    private void initializeHsvSliders() {
+        mHsvSlidersLayout = findViewById(R.id.hsvSlidersLayout);
+
+        Slider hueSlider = findViewById(R.id.hueSlider);
+        hueSlider.addOnChangeListener((slider, value, fromUser) -> {
+            mHue = value;
+            setGradientColor();
+        });
+
+        Slider hueRadiusSlider = findViewById(R.id.hueRadiusSlider);
+        hueRadiusSlider.addOnChangeListener((slider, value, fromUser) -> {
+            mHueRadius = value;
+            setGradientColor();
+        });
+
+        Slider saturationSlider = findViewById(R.id.saturationSlider);
+        saturationSlider.addOnChangeListener((slider, value, fromUser) -> {
+            mSaturation = value;
+            setGradientColor();
+        });
+
+        Slider saturationRadiusSlider = findViewById(R.id.saturationRadiusSlider);
+        saturationRadiusSlider.addOnChangeListener((slider, value, fromUser) -> {
+            mSaturationRadius = value;
+            setGradientColor();
+        });
+
+        Slider valueSlider = findViewById(R.id.valueSlider);
+        valueSlider.addOnChangeListener((slider, value, fromUser) -> {
+            mValue = value;
+            setGradientColor();
+        });
+
+        Slider valueRadiusSlider = findViewById(R.id.valueRadiusSlider);
+        valueRadiusSlider.addOnChangeListener((slider, value, fromUser) -> {
+            mValueRadius = value;
+            setGradientColor();
+        });
+    }
+
+    private void setGradientColor() {
+        int low, hi;
         if (mColorSpace == ColorSpace.COLOR) {
-            mHueSlider.setValueTo(255);
+            low = normalizeColor(mHue - mHueRadius, mSaturation - mSaturationRadius, mValue - mValueRadius);
+            hi = normalizeColor(mHue + mHueRadius, mSaturation + mSaturationRadius, mValue + mValueRadius);
         } else {
-            mHueSlider.setValueTo(179);
+            low = normalizeGray(mGrayValue - mGrayValueRadius);
+            hi = normalizeGray(mGrayValue + mGrayValueRadius);
         }
+        mGradientDrawable.setColors(new int[] {low, hi});
     }
 
-    private void initializeRadiusSlider() {
-        mRadiusSlider = findViewById(R.id.radiusSlider);
-        mRadiusSlider.addOnChangeListener((slider, value, fromUser) -> {
-            mThresholdingRadius = (int) value;
-            setGradientColor(value);
-        });
-    }
-
-    private int convertColorSpace(float mHueValue) {
-        if (mHueValue < 0) {
-            mHueValue = 180 - mHueValue;
-        } else if (mHueValue >= 180) {
-            mHueValue = 180 - mHueValue;
-        }
-        float[] hsv = new float[] {mHueValue * 2, 100, 100};
+    private int normalizeColor(float hue, float saturation, float value) {
+        hue = normalizeInRange(hue, 0, 179);
+        saturation = normalizeInRange(saturation, 0, 255);
+        value = normalizeInRange(value, 0, 255);
+        float[] hsv = new float[] {hue * 2, saturation, value};
         return Color.HSVToColor(hsv);
     }
 
-    private void setGradientColor(float value) {
-        mGradientDrawable.setColors(new int[] {normalizeColor(value - mThresholdingRadius), normalizeColor(value + mThresholdingRadius)});
+    private int normalizeGray(float value) {
+        value = normalizeInRange(value, 0, 255);
+        return Color.rgb((int) value, (int) value, (int) value);
     }
 
-    private int normalizeColor(float value) {
-        if (mColorSpace == ColorSpace.COLOR) {
-            if (value < 0) {
-                value = 180 - value;
-            } else if (value > 179) {
-                value = 180 - value;
-            }
-            float[] hsv = new float[] {value * 2, 100, 100};
-            return Color.HSVToColor(hsv);
-        } else {
-            if (value < 0) {
-                value = 0;
-            } else if (value > 255) {
-                value =  255;
-            }
-            return Color.rgb((int) value, (int) value, (int) value);
+    private float normalizeInRange(float value, float low, float hi) {
+        if (value < low) {
+            return low;
+        } else if (value > hi) {
+            return hi;
         }
+        return value;
     }
 }

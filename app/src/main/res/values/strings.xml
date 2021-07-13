@@ -21,5 +21,9 @@
     <string name="color_space_hint">The input can be either processed in color or transformed to grayscale.</string>
     <string name="color_space_label">Color space</string>
     <string name="pick_size">Specify kernel size</string>
-    <string name="threshold_radius">Specify the radius of hue values to look for</string>
+    <string name="threshold_radius">Specify the radius of pixel values to look for</string>
+    <string name="hue">Hue</string>
+    <string name="saturation">Saturation</string>
+    <string name="hsvValue">Value</string>
+    <string name="radius">Radius</string>
 </resources>

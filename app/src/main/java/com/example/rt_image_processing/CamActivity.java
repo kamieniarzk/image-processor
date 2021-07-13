@@ -13,32 +13,27 @@ import androidx.core.content.ContextCompat;
 
 import com.example.rt_image_processing.model.ColorSpace;
 import com.example.rt_image_processing.model.FilterMode;
+import com.example.rt_image_processing.processor.ImageProcessor;
 
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
-import org.opencv.core.Core;
 import org.opencv.core.Mat;
-import org.opencv.core.Scalar;
 import org.opencv.core.Size;
-import org.opencv.imgproc.Imgproc;
+
+import java.util.ArrayList;
 
 public class CamActivity extends Activity implements CameraBridgeViewBase.CvCameraViewListener2 {
 
     private static final String  TAG = "MainActivity";
 
+    private ImageProcessor mImageProcessor;
+
     private BaseLoaderCallback mLoaderCallback;
     private CameraBridgeViewBase mOpenCvCameraView;
-    private int mKernelSizeInt;
-    private Size mKernelSize;
-    private int mHueValue;
-    private int mHueRadius;
-    private ColorSpace mColorSpace;
-    private FilterMode mFilterMode;
+
     private Mat mCurrentFrame;
-    private Mat mThresholdMask;
-    private Mat mThresh;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,6 +54,7 @@ public class CamActivity extends Activity implements CameraBridgeViewBase.CvCame
     @Override
     protected void onResume() {
         super.onResume();
+        checkPermissions();
         if (!OpenCVLoader.initDebug()) {
             Log.d(TAG, "Internal OpenCV library not found. Using OpenCV Manager for initialization");
             OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_0_0, this, mLoaderCallback);
@@ -70,53 +66,23 @@ public class CamActivity extends Activity implements CameraBridgeViewBase.CvCame
 
     @Override
     public void onCameraViewStarted(int width, int height) {
-
+        mImageProcessor.initializeOpenCvObjects();
     }
 
     @Override
     public void onCameraViewStopped() {
-
+        mImageProcessor.freeOpenCvObjects();
     }
 
     @Override
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
-        mCurrentFrame = colorSpace(inputFrame);
-        filter(mCurrentFrame);
-        return threshold(mCurrentFrame);
-    }
+        mCurrentFrame = mImageProcessor.getMatFromInputFrame(inputFrame);
 
-    private void filter(Mat input) {
-        switch (mFilterMode) {
-            case AVERAGING: {
-                Imgproc.blur(input, input, mKernelSize);
-                break;
-            }
-            case GAUSSIAN: {
-                Imgproc.GaussianBlur(input, input, mKernelSize, 0);
-                break;
-            }
-            case MEDIAN: {
-                Imgproc.medianBlur(input, input, mKernelSizeInt);
-                break;
-            }
-        }
-    }
+        mImageProcessor.filter(mCurrentFrame);
+        mImageProcessor.threshold(mCurrentFrame);
+        mImageProcessor.findAndDrawContours(mCurrentFrame);
 
-    private Mat colorSpace(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
-        if (mColorSpace == ColorSpace.COLOR) {
-            return inputFrame.rgba();
-        }
-        return inputFrame.gray();
-    }
-
-    private Mat threshold(Mat input) {
-        if (mThresh == null) {
-            mThresh = new Mat();
-        }
-        Imgproc.cvtColor(input, input, Imgproc.COLOR_BGR2HSV);
-        Core.inRange(input, new Scalar(mHueValue - mHueRadius, 0, 0),
-                new Scalar(mHueValue + mHueRadius, 255, 255), mThresh);
-        return mThresh;
+        return mCurrentFrame;
     }
 
     private void checkPermissions() {
@@ -151,9 +117,21 @@ public class CamActivity extends Activity implements CameraBridgeViewBase.CvCame
 
     private void initializeMembers() {
         Intent intent = getIntent();
-        mKernelSizeInt = intent.getIntExtra("kernelSize", 3);
-        mKernelSize = new Size(mKernelSizeInt, mKernelSizeInt);
-        mFilterMode = FilterMode.of(intent.getIntExtra("filterMode", -1));
-        mColorSpace = ColorSpace.of(intent.getIntExtra("colorSpace", -1));
+        int kernelSizeInt = intent.getIntExtra("kernelSize", 0);
+        mImageProcessor = ImageProcessor.builder()
+                .mKernelSizeInt(kernelSizeInt)
+                .mKernelSize(new Size(kernelSizeInt, kernelSizeInt))
+                .mFilterMode(FilterMode.of(intent.getIntExtra("filterMode", -1)))
+                .mColorSpace(ColorSpace.of(intent.getIntExtra("colorSpace", -1)))
+                .mHue(intent.getIntExtra("hue", 0))
+                .mHueRadius(intent.getIntExtra("hueRadius", 0))
+                .mSaturation(intent.getFloatExtra("saturation", 0))
+                .mSaturationRadius(intent.getFloatExtra("saturationRadius", 0))
+                .mValue(intent.getFloatExtra("value", 0))
+                .mValueRadius(intent.getFloatExtra("valueRadius", 0))
+                .mGrayValue(intent.getFloatExtra("grayValue", 0))
+                .mGrayValueRadius(intent.getFloatExtra("grayValueRadius", 0))
+                .mContoursList(new ArrayList<>())
+                .build();
     }
 }

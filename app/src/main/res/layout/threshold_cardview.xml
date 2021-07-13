@@ -34,51 +34,42 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="8dp"
+            android:layout_margin="4dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:gravity="center_horizontal"
             android:orientation="vertical">
-
             <View
-                android:id="@+id/hueGradientView"
+                android:id="@+id/gradientView"
                 android:layout_width="150dp"
                 android:layout_height="150dp"/>
-
-            <com.google.android.material.slider.Slider
-                android:id="@+id/thresholdSlider"
-                app:tickVisible="false"
-                android:stepSize="1"
-                android:layout_height="wrap_content"
-                android:layout_width="match_parent"/>
-        </LinearLayout>
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="8dp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:gravity="center_horizontal"
-            android:orientation="vertical">
-            <TextView
+            <LinearLayout
+                android:id="@+id/hsvSlidersLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/threshold_radius"
-                android:textAlignment="center"
-                android:scaleType="centerCrop"
-                android:layout_margin="8dp"
-                />
-
-            <com.google.android.material.slider.Slider
-                android:id="@+id/radiusSlider"
-                app:tickVisible="false"
-                android:stepSize="1"
-                android:valueFrom="1.0"
-                android:valueTo="60.0"
+                android:layout_margin="4dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:gravity="center_horizontal"
+                android:orientation="vertical"
+                android:visibility="gone">
+                <include layout="@layout/hue_slider_layout"/>
+                <include layout="@layout/saturation_slider_layout"/>
+                <include layout="@layout/value_slider_layout"/>
+            </LinearLayout>
+            <LinearLayout
+                android:id="@+id/graySlidersLayout"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_width="match_parent"/>
+                android:layout_margin="4dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:gravity="center_horizontal"
+                android:orientation="vertical"
+                android:visibility="gone">
+                <include layout="@layout/gray_slider_layout"/>
+            </LinearLayout>
         </LinearLayout>
-
     </LinearLayout>
 
 </com.google.android.material.card.MaterialCardView>
