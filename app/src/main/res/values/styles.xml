@@ -12,6 +12,15 @@
         <item name="colorSecondary">@color/colorSecondary</item>
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowFullscreen">true</item>
+        <item name="radioButtonStyle">@style/Widget.App.RadioButton</item>
+    </style>
+
+    <style name="Widget.App.RadioButton" parent="Widget.MaterialComponents.CompoundButton.RadioButton">
+        <item name="materialThemeOverlay">@style/ThemeOverlay.App.RadioButton</item>
+    </style>
+
+    <style name="ThemeOverlay.App.RadioButton" parent="">
+        <item name="buttonTint">@color/colorPrimary</item>
     </style>
 
 </resources>

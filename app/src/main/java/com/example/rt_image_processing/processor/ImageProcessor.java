@@ -37,6 +37,7 @@ public class ImageProcessor {
     private final float mGrayValueRadius;
 
     // OpenCV objects
+    private Mat mHsvFrame;
     private Mat mDownScaledFrame;
     private Mat mThresholdMask;
     private Mat mHierarchy;
@@ -73,8 +74,8 @@ public class ImageProcessor {
 
     public void threshold(Mat input) {
         if (mColorSpace == ColorSpace.COLOR) {
-            Imgproc.cvtColor(input, input, Imgproc.COLOR_BGR2HSV);
-            Core.inRange(input, new Scalar(mHue - mHueRadius, mSaturation - mSaturationRadius, mValue - mValueRadius),
+            Imgproc.cvtColor(input, mHsvFrame, Imgproc.COLOR_BGR2HSV);
+            Core.inRange(mHsvFrame, new Scalar(mHue - mHueRadius, mSaturation - mSaturationRadius, mValue - mValueRadius),
                     new Scalar(mHue + mHueRadius, mSaturation + mSaturationRadius, mValue + mValueRadius), mThresholdMask);
         } else {
             Imgproc.threshold(input, mThresholdMask, mGrayValue - mGrayValueRadius, mGrayValue + mGrayValueRadius, Imgproc.THRESH_BINARY);
@@ -100,6 +101,7 @@ public class ImageProcessor {
         mHierarchy = new Mat();
         mContourColor = new Scalar(0,255,0);
         mDownScaledFrame = new Mat();
+        mHsvFrame = new Mat();
         matOfPointComparator = (m1, m2) -> {
             double a = Imgproc.contourArea(m1);
             double b = Imgproc.contourArea(m2);

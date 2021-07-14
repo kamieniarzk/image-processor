@@ -5,13 +5,13 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
-import android.text.InputType;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -19,7 +19,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.rt_image_processing.model.ColorSpace;
 import com.example.rt_image_processing.model.FilterMode;
-import com.example.rt_image_processing.processor.ImageProcessor;
+import com.example.rt_image_processing.model.SegmentationMethod;
 import com.google.android.material.slider.Slider;
 
 import java.util.List;
@@ -28,14 +28,16 @@ public class MainActivity extends AppCompatActivity {
     private static final List<Integer> KERNEL_SIZES = List.of(3, 5, 7, 9);
     private static final int[] KERNEL_TYPES = new int[]{R.string.averaging, R.string.gaussian, R.string.median};
 
-
     private TextView mFilterDescriptionTextView;
     private LinearLayout mFilterSizeSelectorLayout;
     private LinearLayout mHsvSlidersLayout;
     private LinearLayout mGraySlidersLayout;
+    private LinearLayout mThresholdingLayout;
+    private LinearLayout mEdgeDetectionLayout;
     private int mKernelSize;
     private ColorSpace mColorSpace;
     private FilterMode mFilterMode;
+    private SegmentationMethod mSegmentationMethod;
     private float mGrayValue;
     private float mGrayValueRadius;
     private float mHue;
@@ -44,12 +46,7 @@ public class MainActivity extends AppCompatActivity {
     private float mHueRadius;
     private float mValueRadius;
     private float mSaturationRadius;
-    private float mMinContourArea = 0.1f;
     private GradientDrawable mGradientDrawable;
-
-    public MainActivity() {
-
-    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -62,10 +59,39 @@ public class MainActivity extends AppCompatActivity {
         initializeButtons();
         initializeFilterModeCardView();
         initializeKernelSizeSpinner();
-        initializeColorSpaceSpinner();
         initializeGradientView();
         initializeHsvSliders();
         initializeGraySliders();
+        initializeColorButton();
+        initializeSegmentationLayout();
+    }
+
+    private void initializeSegmentationLayout() {
+        mThresholdingLayout = findViewById(R.id.thresholdingLayout);
+        mEdgeDetectionLayout = findViewById(R.id.edgeDetectionLayout);
+        toggleSegmentationMethod();
+
+        RadioButton thresholdingButton = findViewById(R.id.thresholdingButton);
+        thresholdingButton.setOnCheckedChangeListener((compoundButton, b) -> toggleSegmentationMethod());
+    }
+
+    private void toggleSegmentationMethod() {
+        if (mSegmentationMethod == SegmentationMethod.EDGE_DETECTION || mSegmentationMethod == null) {
+            mSegmentationMethod = SegmentationMethod.EDGE_DETECTION;
+            mEdgeDetectionLayout.setVisibility(View.VISIBLE);
+            mThresholdingLayout.setVisibility(View.GONE);
+        } else {
+            mSegmentationMethod = SegmentationMethod.THRESHOLDING;
+            mEdgeDetectionLayout.setVisibility(View.GONE);
+            mThresholdingLayout.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void initializeColorButton() {
+        toggleColorSpace();
+        RadioButton colorButton = findViewById(R.id.colorButton);
+        colorButton.setChecked(true);
+        colorButton.setOnCheckedChangeListener((compoundButton, b) -> toggleColorSpace());
     }
 
     private void initializeButtons() {
@@ -94,7 +120,6 @@ public class MainActivity extends AppCompatActivity {
         intent.putExtra("grayValue", mGrayValue);
         intent.putExtra("grayValueRadius", mGrayValueRadius);
         startActivity(intent);
-        Toast.makeText(MainActivity.this, "put filterMode as " + mFilterMode.getValue(), Toast.LENGTH_LONG);
     }
 
     private void openGallery() {
@@ -130,26 +155,6 @@ public class MainActivity extends AppCompatActivity {
         ArrayAdapter<Integer> sizeAdapter = new ArrayAdapter<>(this, R.layout.list_item, KERNEL_SIZES);
         kernelSizeSpinner.setAdapter(sizeAdapter);
         kernelSizeSpinner.setOnItemClickListener((adapterView, view, i, l) -> mKernelSize = KERNEL_SIZES.get(i));
-    }
-
-    private void initializeColorSpaceSpinner() {
-        AutoCompleteTextView colorSpaceSpinner = findViewById(R.id.colorSpaceSpinner);
-        colorSpaceSpinner.setInputType(InputType.TYPE_NULL);
-
-        ColorSpace[] colorSpaces = ColorSpace.values();
-
-        ArrayAdapter<ColorSpace> colorSpaceAdapter = new ArrayAdapter<>(this, R.layout.list_item, colorSpaces);
-        colorSpaceSpinner.setAdapter(colorSpaceAdapter);
-        colorSpaceSpinner.setOnItemClickListener((adapterView, view, i, l) -> {
-            mColorSpace = colorSpaces[i];
-            if (mColorSpace == ColorSpace.COLOR) {
-                mHsvSlidersLayout.setVisibility(View.VISIBLE);
-                mGraySlidersLayout.setVisibility(View.GONE);
-            } else {
-                mHsvSlidersLayout.setVisibility(View.GONE);
-                mGraySlidersLayout.setVisibility(View.VISIBLE);
-            }
-        });
     }
 
     private void initializeGradientView() {
@@ -230,24 +235,36 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private int normalizeColor(float hue, float saturation, float value) {
-        hue = normalizeInRange(hue, 0, 179);
-        saturation = normalizeInRange(saturation, 0, 255);
-        value = normalizeInRange(value, 0, 255);
+        hue = normalizeInRangeFromZero(hue, 179);
+        saturation = normalizeInRangeFromZero(saturation, 255);
+        value = normalizeInRangeFromZero(value, 255);
         float[] hsv = new float[] {hue * 2, saturation, value};
         return Color.HSVToColor(hsv);
     }
 
     private int normalizeGray(float value) {
-        value = normalizeInRange(value, 0, 255);
+        value = normalizeInRangeFromZero(value, 255);
         return Color.rgb((int) value, (int) value, (int) value);
     }
 
-    private float normalizeInRange(float value, float low, float hi) {
-        if (value < low) {
-            return low;
-        } else if (value > hi) {
-            return hi;
+    private float normalizeInRangeFromZero(float value, float range) {
+        if (value < 0) {
+            return 0;
+        } else if (value > range) {
+            return range;
         }
         return value;
+    }
+
+    private void toggleColorSpace() {
+        if (mColorSpace == ColorSpace.GRAY || mColorSpace == null) {
+            mColorSpace = ColorSpace.COLOR;
+            mHsvSlidersLayout.setVisibility(View.VISIBLE);
+            mGraySlidersLayout.setVisibility(View.GONE);
+        } else {
+            mColorSpace = ColorSpace.GRAY;
+            mHsvSlidersLayout.setVisibility(View.GONE);
+            mGraySlidersLayout.setVisibility(View.VISIBLE);
+        }
     }
 }

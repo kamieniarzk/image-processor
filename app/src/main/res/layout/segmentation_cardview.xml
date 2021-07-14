@@ -1,0 +1,109 @@
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/card"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginVertical="3dp"
+    app:layout_constraintBottom_toTopOf="@id/cameraButton"
+    app:layout_constraintTop_toBottomOf="@id/textView"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    android:clickable="true"
+    android:focusable="true"
+    app:cardElevation="1dp"
+    app:shapeAppearance="?attr/shapeAppearanceMediumComponent"
+    app:cardCornerRadius="12dp"
+    app:contentPadding="16dp"
+    app:strokeWidth="2dp"
+    app:strokeColor="@color/grey">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:animateLayoutChanges="true">
+        <RadioGroup
+            android:checkedButton="@+id/thresholdingButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <RadioButton
+                android:id="@+id/thresholdingButton"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="@string/thresholding" />
+            <RadioButton
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="@string/edge_detection"/>
+        </RadioGroup>
+        <LinearLayout
+            android:id="@+id/edgeDetectionLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:animateLayoutChanges="true"
+            android:visibility="gone">
+
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/thresholdingLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:animateLayoutChanges="true"
+            android:visibility="gone">
+            <TextView
+                android:textAlignment="center"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/thresholding_description"
+                android:scaleType="centerCrop"
+                android:layout_margin="8dp"
+                />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="4dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:gravity="center_horizontal"
+                android:orientation="vertical">
+                <View
+                    android:id="@+id/gradientView"
+                    android:layout_width="150dp"
+                    android:layout_height="150dp"/>
+                <LinearLayout
+                    android:id="@+id/hsvSlidersLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="4dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    android:gravity="center_horizontal"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+                    <include layout="@layout/hue_slider_layout"/>
+                    <include layout="@layout/saturation_slider_layout"/>
+                    <include layout="@layout/value_slider_layout"/>
+                </LinearLayout>
+                <LinearLayout
+                    android:id="@+id/graySlidersLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="4dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    android:gravity="center_horizontal"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+                    <include layout="@layout/gray_slider_layout"/>
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+
+
+</com.google.android.material.card.MaterialCardView>

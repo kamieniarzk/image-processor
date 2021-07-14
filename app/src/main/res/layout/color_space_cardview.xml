@@ -37,8 +37,22 @@
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_gravity="center_horizontal"
             android:orientation="horizontal">
+            <RadioGroup
+                android:checkedButton="@+id/colorButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
 
-            <include layout="@layout/color_space_spinner"/>
+                <RadioButton
+                    android:id="@+id/colorButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:text="@string/color" />
+                <RadioButton
+                    android:id="@+id/grayscaleButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:text="@string/gray"/>
+            </RadioGroup>
 
         </LinearLayout>
 

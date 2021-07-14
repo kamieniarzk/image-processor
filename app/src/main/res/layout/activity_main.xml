@@ -51,7 +51,7 @@
             app:layout_constraintBottom_toBottomOf="parent">
             <include layout="@layout/color_space_cardview"/>
             <include layout="@layout/filter_cardview"/>
-            <include layout="@layout/threshold_cardview"/>
+            <include layout="@layout/segmentation_cardview"/>
 
             <Button
                 android:id="@+id/cameraButton"
