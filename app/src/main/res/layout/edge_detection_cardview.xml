@@ -24,11 +24,11 @@
         android:orientation="vertical"
         android:animateLayoutChanges="true">
         <RadioGroup
-            android:checkedButton="@+id/sobelThresholding"
+            android:checkedButton="@+id/sobelButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
             <RadioButton
-                android:id="@+id/sobelThresholding"
+                android:id="@+id/sobelButton"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:text="@string/sobel" />

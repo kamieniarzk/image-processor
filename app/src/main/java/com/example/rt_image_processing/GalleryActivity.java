@@ -16,11 +16,12 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.appbar.MaterialToolbar;
+
 import java.util.ArrayList;
 
 public class GalleryActivity extends AppCompatActivity {
     private ActivityResultLauncher<String> requestPermissionLauncher;
-    private ImageButton mBackButton;
 
     private ArrayList<Video> videosList = new ArrayList<>();
     private VideoAdapter adapterVideoList;
@@ -46,12 +47,8 @@ public class GalleryActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(new GridLayoutManager(this, 3));
         adapterVideoList = new VideoAdapter(this, videosList);
         recyclerView.setAdapter(adapterVideoList);
-        mBackButton = findViewById(R.id.backButton);
-        mBackButton.setOnClickListener(view -> backToMain());
-    }
-
-    private void backToMain() {
-        finish();
+        MaterialToolbar topBar = findViewById(R.id.galleryTopBar);
+        topBar.setNavigationOnClickListener(view -> finish());
     }
 
     public void initVideos() {

@@ -39,7 +39,7 @@ public class ImageProcessor {
     private final float mGrayValueRadius;
 
     // edge detection
-    private EdgeDetectionMethod edgeDetectionMethod;
+    private EdgeDetectionMethod mEdgeDetectionMethod;
 
     // OpenCV objects
     private Mat mHsvFrame;
@@ -76,6 +76,18 @@ public class ImageProcessor {
                 break;
             }
         }
+    }
+
+    public void segmentationStep(Mat input) {
+        if (mSegmentationMethod == SegmentationMethod.THRESHOLDING) {
+            threshold(input);
+        } else {
+            detectEdges(input);
+        }
+    }
+
+    private void detectEdges(Mat input) {
+
     }
 
     public void threshold(Mat input) {

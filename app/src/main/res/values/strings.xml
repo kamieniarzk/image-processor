@@ -34,4 +34,6 @@
     <string name="specify_segmentation">Specify segmentation method:</string>
     <string name="sobel">Sobel\'s method</string>
     <string name="canny">Canny\'s method</string>
+    <string name="filter_mode">Filter mode</string>
+    <string name="kernel_size">Kernel size</string>
 </resources>

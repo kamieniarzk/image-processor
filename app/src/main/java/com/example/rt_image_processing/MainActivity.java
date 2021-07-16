@@ -1,6 +1,5 @@
 package com.example.rt_image_processing;
 
-
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
@@ -9,7 +8,6 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.TextView;
@@ -21,6 +19,7 @@ import com.example.rt_image_processing.model.ColorSpace;
 import com.example.rt_image_processing.model.EdgeDetectionMethod;
 import com.example.rt_image_processing.model.FilterMode;
 import com.example.rt_image_processing.model.SegmentationMethod;
+import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.slider.Slider;
 
@@ -35,6 +34,7 @@ public class MainActivity extends AppCompatActivity {
     private LinearLayout mGraySlidersLayout;
     private MaterialCardView mThresholdingCardview;
     private MaterialCardView mEdgeDetectionCardView;
+    private MaterialToolbar mToolbar;
     private int mKernelSize;
     private ColorSpace mColorSpace;
     private FilterMode mFilterMode;
@@ -66,6 +66,21 @@ public class MainActivity extends AppCompatActivity {
         initializeGraySliders();
         initializeColorButton();
         initializeSegmentationLayout();
+        initializeEdgeDetectionLayout();
+    }
+
+    private void initializeEdgeDetectionLayout() {
+        RadioButton sobelButton = findViewById(R.id.sobelButton);
+        sobelButton.setOnCheckedChangeListener((compoundButton, b) -> toggleEdgeDetectionMethod());
+        toggleEdgeDetectionMethod();
+    }
+
+    private void toggleEdgeDetectionMethod() {
+        if (mEdgeDetectionMethod == EdgeDetectionMethod.Canny || mEdgeDetectionMethod == null) {
+            mEdgeDetectionMethod = EdgeDetectionMethod.Sobel;
+        } else {
+            mEdgeDetectionMethod = EdgeDetectionMethod.Canny;
+        }
     }
 
     private void initializeSegmentationLayout() {
@@ -96,8 +111,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initializeButtons() {
-        ImageButton galleryButton = findViewById(R.id.galleryButton);
-        galleryButton.setOnClickListener(view -> openGallery());
+        mToolbar = findViewById(R.id.mainTopBar);
+        mToolbar.setOnMenuItemClickListener(item -> {
+            openGallery();
+            return true;
+        });
 
         Button cameraButton = findViewById(R.id.cameraButton);
         cameraButton.setOnClickListener(view -> openCamera());
@@ -108,7 +126,7 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "Color space and filter mode must be specified!", Toast.LENGTH_SHORT).show();
             return;
         }
-        Intent intent = new Intent(getApplicationContext(), CamActivity.class);
+        Intent intent = new Intent(getApplicationContext(), CameraActivity.class);
         intent.putExtra("kernelSize", mKernelSize);
         intent.putExtra("filterMode", mFilterMode.getValue());
         intent.putExtra("colorSpace", mColorSpace.getValue());
@@ -121,7 +139,7 @@ public class MainActivity extends AppCompatActivity {
         intent.putExtra("grayValue", mGrayValue);
         intent.putExtra("grayValueRadius", mGrayValueRadius);
         intent.putExtra("segmentationMethod", mSegmentationMethod.getValue());
-        intent.putExtra("edgeDetectionMethod", mEdge)
+        intent.putExtra("edgeDetectionMethod", mEdgeDetectionMethod.getValue());
         startActivity(intent);
     }
 
@@ -140,6 +158,7 @@ public class MainActivity extends AppCompatActivity {
         ArrayAdapter<FilterMode> modeAdapter = new ArrayAdapter<>(this, R.layout.list_item, filterModes);
         filterModeSpinner.setAdapter(modeAdapter);
         filterModeSpinner.setOnItemClickListener((adapterView, view, i, l) -> setFilterMode(filterModes[i], i));
+        filterModeSpinner.setText(FilterMode.None.name(), false);
         setFilterMode(filterModes[0], 0); // None
     }
 
@@ -149,6 +168,8 @@ public class MainActivity extends AppCompatActivity {
         ArrayAdapter<Integer> sizeAdapter = new ArrayAdapter<>(this, R.layout.list_item, KERNEL_SIZES);
         kernelSizeSpinner.setAdapter(sizeAdapter);
         kernelSizeSpinner.setOnItemClickListener((adapterView, view, i, l) -> mKernelSize = KERNEL_SIZES.get(i));
+        kernelSizeSpinner.setText("3", false);
+        mKernelSize = 3;
     }
 
     private void initializeGradientView() {
