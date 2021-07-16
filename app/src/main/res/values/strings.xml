@@ -36,4 +36,5 @@
     <string name="canny">Canny\'s method</string>
     <string name="filter_mode">Filter mode</string>
     <string name="kernel_size">Kernel size</string>
+    <string name="lorem">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc velit massa, commodo at libero eget, sollicitudin tincidunt nunc. Aliquam vel elementum libero. Nulla ullamcorper fermentum justo, nec tempor diam iaculis nec. Aenean tincidunt lobortis mauris. Integer at felis eu nisi facilisis dictum sit amet ac lectus. Donec dapibus quis magna non lacinia. In hac habitasse platea dictumst. Aenean lacinia sodales dui, eu auctor urna dapibus nec. Duis auctor aliquam rhoncus. Nunc ac lacus sed purus consequat aliquet. Nam dapibus dictum commodo. Donec egestas sollicitudin augue eu suscipit. Sed nec justo lectus. Nam posuere mauris maximus sem aliquam, id gravida quam.</string>
 </resources>
