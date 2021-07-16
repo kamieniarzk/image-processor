@@ -22,11 +22,11 @@
         android:id="@+id/textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="60dp"
-        android:layout_marginBottom="1dp"
+        android:layout_marginTop="30dp"
+        android:layout_marginBottom="5dp"
         android:text="@string/welcome_text"
         android:textAlignment="center"
-        android:textSize="30sp"
+        android:textSize="25sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -38,6 +38,7 @@
         android:layout_marginTop="20dp"
         android:layout_height="0dp"
         android:fillViewport="false"
+        android:scrollbars="none"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@id/textView"
         app:layout_constraintEnd_toEndOf="parent"
@@ -52,6 +53,10 @@
             <include layout="@layout/color_space_cardview"/>
             <include layout="@layout/filter_cardview"/>
             <include layout="@layout/segmentation_cardview"/>
+            <include layout="@layout/edge_detection_cardview"/>
+            <include layout="@layout/thresholding_cardview"/>
+
+
 
             <Button
                 android:id="@+id/cameraButton"

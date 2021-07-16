@@ -9,7 +9,7 @@
     app:layout_constraintStart_toStartOf="parent"
     android:clickable="true"
     android:focusable="true"
-    app:cardElevation="1dp"
+    app:cardElevation="3dp"
     app:shapeAppearance="?attr/shapeAppearanceMediumComponent"
     app:cardCornerRadius="12dp"
     app:contentPadding="16dp"

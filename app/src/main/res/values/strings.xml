@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">Image processor</string>
-    <string name="welcome_text">Image processing algorithm configuration</string>
+    <string name="welcome_text">Algorithm configuration</string>
     <string name="camera_on_button">Start camera</string>
     <string name="flip_camera_button">Flip camera</string>
     <string name="threshold1">Threshold 1</string>
@@ -30,4 +30,8 @@
     <string name="gray">Grayscale</string>
     <string name="edge_detection">Edge detection</string>
     <string name="thresholding">Thresholding</string>
+    <string name="segmentation">In this stage of processing, a binary mask is created from the input frame after applying a segmentation method.</string>
+    <string name="specify_segmentation">Specify segmentation method:</string>
+    <string name="sobel">Sobel\'s method</string>
+    <string name="canny">Canny\'s method</string>
 </resources>

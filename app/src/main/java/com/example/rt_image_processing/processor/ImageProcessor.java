@@ -1,7 +1,9 @@
 package com.example.rt_image_processing.processor;
 
 import com.example.rt_image_processing.model.ColorSpace;
+import com.example.rt_image_processing.model.EdgeDetectionMethod;
 import com.example.rt_image_processing.model.FilterMode;
+import com.example.rt_image_processing.model.SegmentationMethod;
 
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.core.Core;
@@ -36,6 +38,9 @@ public class ImageProcessor {
     private final float mGrayValue;
     private final float mGrayValueRadius;
 
+    // edge detection
+    private EdgeDetectionMethod edgeDetectionMethod;
+
     // OpenCV objects
     private Mat mHsvFrame;
     private Mat mDownScaledFrame;
@@ -46,6 +51,7 @@ public class ImageProcessor {
     // util
     private final List<MatOfPoint> mContoursList;
     private Comparator<MatOfPoint> matOfPointComparator;
+    private SegmentationMethod mSegmentationMethod;
 
     public Mat getMatFromInputFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
         if (mColorSpace == ColorSpace.COLOR) {
@@ -57,15 +63,15 @@ public class ImageProcessor {
 
     public void filter(Mat input) {
         switch (mFilterMode) {
-            case AVERAGING: {
+            case Averaging: {
                 Imgproc.blur(input, input, mKernelSize);
                 break;
             }
-            case GAUSSIAN: {
+            case Gaussian: {
                 Imgproc.GaussianBlur(input, input, mKernelSize, 0);
                 break;
             }
-            case MEDIAN: {
+            case Median: {
                 Imgproc.medianBlur(input, input, mKernelSizeInt);
                 break;
             }
@@ -86,7 +92,7 @@ public class ImageProcessor {
 
         Imgproc.findContours(mThresholdMask, mContoursList, mHierarchy, Imgproc.RETR_LIST, Imgproc.CHAIN_APPROX_SIMPLE);
         Collections.sort(mContoursList, matOfPointComparator);
-        if (!mContoursList.isEmpty() && mColorSpace == ColorSpace.GRAY) {
+        if (!mContoursList.isEmpty() && mColorSpace == ColorSpace.GRAYSCALE) {
             Imgproc.cvtColor(input, input, Imgproc.COLOR_GRAY2BGR);
         }
         for (int i = 0; i < 2 && i < mContoursList.size(); i++) {

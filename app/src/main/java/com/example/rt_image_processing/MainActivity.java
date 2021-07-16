@@ -18,8 +18,10 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.rt_image_processing.model.ColorSpace;
+import com.example.rt_image_processing.model.EdgeDetectionMethod;
 import com.example.rt_image_processing.model.FilterMode;
 import com.example.rt_image_processing.model.SegmentationMethod;
+import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.slider.Slider;
 
 import java.util.List;
@@ -27,17 +29,17 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
     private static final List<Integer> KERNEL_SIZES = List.of(3, 5, 7, 9);
     private static final int[] KERNEL_TYPES = new int[]{R.string.averaging, R.string.gaussian, R.string.median};
-
     private TextView mFilterDescriptionTextView;
     private LinearLayout mFilterSizeSelectorLayout;
     private LinearLayout mHsvSlidersLayout;
     private LinearLayout mGraySlidersLayout;
-    private LinearLayout mThresholdingLayout;
-    private LinearLayout mEdgeDetectionLayout;
+    private MaterialCardView mThresholdingCardview;
+    private MaterialCardView mEdgeDetectionCardView;
     private int mKernelSize;
     private ColorSpace mColorSpace;
     private FilterMode mFilterMode;
     private SegmentationMethod mSegmentationMethod;
+    private EdgeDetectionMethod mEdgeDetectionMethod;
     private float mGrayValue;
     private float mGrayValueRadius;
     private float mHue;
@@ -67,23 +69,22 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initializeSegmentationLayout() {
-        mThresholdingLayout = findViewById(R.id.thresholdingLayout);
-        mEdgeDetectionLayout = findViewById(R.id.edgeDetectionLayout);
+        mThresholdingCardview = findViewById(R.id.thresholding_cardview);
+        mEdgeDetectionCardView = findViewById(R.id.edge_detection_cardview);
         toggleSegmentationMethod();
-
         RadioButton thresholdingButton = findViewById(R.id.thresholdingButton);
         thresholdingButton.setOnCheckedChangeListener((compoundButton, b) -> toggleSegmentationMethod());
     }
 
     private void toggleSegmentationMethod() {
         if (mSegmentationMethod == SegmentationMethod.EDGE_DETECTION || mSegmentationMethod == null) {
-            mSegmentationMethod = SegmentationMethod.EDGE_DETECTION;
-            mEdgeDetectionLayout.setVisibility(View.VISIBLE);
-            mThresholdingLayout.setVisibility(View.GONE);
-        } else {
             mSegmentationMethod = SegmentationMethod.THRESHOLDING;
-            mEdgeDetectionLayout.setVisibility(View.GONE);
-            mThresholdingLayout.setVisibility(View.VISIBLE);
+            mEdgeDetectionCardView.setVisibility(View.GONE);
+            mThresholdingCardview.setVisibility(View.VISIBLE);
+        } else {
+            mSegmentationMethod = SegmentationMethod.EDGE_DETECTION;
+            mEdgeDetectionCardView.setVisibility(View.VISIBLE);
+            mThresholdingCardview.setVisibility(View.GONE);
         }
     }
 
@@ -119,6 +120,8 @@ public class MainActivity extends AppCompatActivity {
         intent.putExtra("valueRadius", mValueRadius);
         intent.putExtra("grayValue", mGrayValue);
         intent.putExtra("grayValueRadius", mGrayValueRadius);
+        intent.putExtra("segmentationMethod", mSegmentationMethod.getValue());
+        intent.putExtra("edgeDetectionMethod", mEdge)
         startActivity(intent);
     }
 
@@ -136,17 +139,8 @@ public class MainActivity extends AppCompatActivity {
         final FilterMode[] filterModes = FilterMode.values();
         ArrayAdapter<FilterMode> modeAdapter = new ArrayAdapter<>(this, R.layout.list_item, filterModes);
         filterModeSpinner.setAdapter(modeAdapter);
-        filterModeSpinner.setOnItemClickListener((adapterView, view, i, l) -> {
-            mFilterMode = filterModes[i];
-            if (mFilterMode == FilterMode.NONE) {
-                mFilterDescriptionTextView.setVisibility(View.GONE);
-                mFilterSizeSelectorLayout.setVisibility(View.GONE);
-            } else {
-                mFilterDescriptionTextView.setText(KERNEL_TYPES[i-1]);
-                mFilterDescriptionTextView.setVisibility(View.VISIBLE);
-                mFilterSizeSelectorLayout.setVisibility(View.VISIBLE);
-            }
-        });
+        filterModeSpinner.setOnItemClickListener((adapterView, view, i, l) -> setFilterMode(filterModes[i], i));
+        setFilterMode(filterModes[0], 0); // None
     }
 
     private void initializeKernelSizeSpinner() {
@@ -257,14 +251,26 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void toggleColorSpace() {
-        if (mColorSpace == ColorSpace.GRAY || mColorSpace == null) {
+        if (mColorSpace == ColorSpace.GRAYSCALE || mColorSpace == null) {
             mColorSpace = ColorSpace.COLOR;
             mHsvSlidersLayout.setVisibility(View.VISIBLE);
             mGraySlidersLayout.setVisibility(View.GONE);
         } else {
-            mColorSpace = ColorSpace.GRAY;
+            mColorSpace = ColorSpace.GRAYSCALE;
             mHsvSlidersLayout.setVisibility(View.GONE);
             mGraySlidersLayout.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void setFilterMode(FilterMode mode, int index) {
+        mFilterMode = mode;
+        if (mFilterMode == FilterMode.None) {
+            mFilterDescriptionTextView.setVisibility(View.GONE);
+            mFilterSizeSelectorLayout.setVisibility(View.GONE);
+        } else {
+            mFilterDescriptionTextView.setText(KERNEL_TYPES[index - 1]);
+            mFilterDescriptionTextView.setVisibility(View.VISIBLE);
+            mFilterSizeSelectorLayout.setVisibility(View.VISIBLE);
         }
     }
 }

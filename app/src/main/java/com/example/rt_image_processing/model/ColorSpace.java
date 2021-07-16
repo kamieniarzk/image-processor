@@ -4,7 +4,7 @@ package com.example.rt_image_processing.model;
 import lombok.Getter;
 
 public enum ColorSpace {
-    GRAY(0), COLOR(1);
+    GRAYSCALE(0), COLOR(1);
 
     @Getter
     private final int value;

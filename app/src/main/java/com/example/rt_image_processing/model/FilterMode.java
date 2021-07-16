@@ -3,7 +3,7 @@ package com.example.rt_image_processing.model;
 import lombok.Getter;
 
 public enum FilterMode {
-    NONE(0), AVERAGING(1), GAUSSIAN(2), MEDIAN(3);
+    None(0), Averaging(1), Gaussian(2), Median(3);
 
     @Getter
     private final int value;
