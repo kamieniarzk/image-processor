@@ -18,6 +18,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.rt_image_processing.model.ColorSpace;
 import com.example.rt_image_processing.model.EdgeDetectionMethod;
 import com.example.rt_image_processing.model.FilterMode;
+import com.example.rt_image_processing.model.MarkingMethod;
 import com.example.rt_image_processing.model.SegmentationMethod;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.card.MaterialCardView;
@@ -32,6 +33,8 @@ public class MainActivity extends AppCompatActivity {
     private LinearLayout mFilterSizeSelectorLayout;
     private LinearLayout mHsvSlidersLayout;
     private LinearLayout mGraySlidersLayout;
+    private LinearLayout mBackgroundChangeLayout;
+    private LinearLayout mDrawContoursLayout;
     private MaterialCardView mThresholdingCardview;
     private MaterialCardView mEdgeDetectionCardView;
     private MaterialToolbar mToolbar;
@@ -40,15 +43,22 @@ public class MainActivity extends AppCompatActivity {
     private FilterMode mFilterMode;
     private SegmentationMethod mSegmentationMethod;
     private EdgeDetectionMethod mEdgeDetectionMethod;
-    private float mGrayValue;
-    private float mGrayValueRadius;
-    private float mHue;
+    private MarkingMethod mMarkingMethod;
+    private int mGrayValue;
+    private int mGrayValueRadius;
+    private int mHue;
+    private int mHueRadius;
     private float mSaturation;
     private float mValue;
-    private float mHueRadius;
     private float mValueRadius;
     private float mSaturationRadius;
-    private GradientDrawable mGradientDrawable;
+
+    private int mBackgroundHue;
+    private float mBackgroundSaturation;
+    private float mBackgroundValue;
+    private GradientDrawable mThresholdGradient;
+    private View mBackgroundColorPreview;
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -67,6 +77,23 @@ public class MainActivity extends AppCompatActivity {
         initializeColorButton();
         initializeSegmentationLayout();
         initializeEdgeDetectionLayout();
+        initializeBackgroundColorLayout();
+        initializeMarkingLayout();
+    }
+
+    private void initializeMarkingLayout() {
+        mDrawContoursLayout = findViewById(R.id.draw_contours_layout);
+        RadioButton backgroundChangeButton = findViewById(R.id.drawContoursButton);
+        backgroundChangeButton.setOnCheckedChangeListener((comoundButton, b) -> toggleMarkingMethod());
+        toggleMarkingMethod();
+    }
+
+    private void toggleMarkingMethod() {
+        if (mMarkingMethod == MarkingMethod.BACKGROUND_CHANGE || mMarkingMethod == null) {
+            mMarkingMethod = MarkingMethod.DRAW_CONTOURS;
+        } else {
+            mMarkingMethod = MarkingMethod.BACKGROUND_CHANGE;
+        }
     }
 
     private void initializeEdgeDetectionLayout() {
@@ -117,8 +144,15 @@ public class MainActivity extends AppCompatActivity {
             return true;
         });
 
+        mToolbar.setNavigationOnClickListener((view) -> startHomeActivity());
+
         Button cameraButton = findViewById(R.id.cameraButton);
         cameraButton.setOnClickListener(view -> openCamera());
+    }
+
+    private void startHomeActivity() {
+        Intent intent = new Intent(this, HomeActivity.class);
+        startActivity(intent);
     }
 
     private void openCamera() {
@@ -126,21 +160,39 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "Color space and filter mode must be specified!", Toast.LENGTH_SHORT).show();
             return;
         }
+
+        int saturationInt = convertFrom1To255Range(mSaturation);
+        int saturationRadiusInt = convertFrom1To255Range(mSaturationRadius);
+        int valueInt = convertFrom1To255Range(mValue);
+        int valueRadiusInt = convertFrom1To255Range(mValueRadius);
+
+        int rgbBackground = Color.HSVToColor(new float[] {mBackgroundHue, mBackgroundSaturation, mBackgroundValue});
+        int backgroundRed = Color.red(rgbBackground);
+        int backgroundGreen = Color.green(rgbBackground);
+        int backgroundBlue = Color.blue(rgbBackground);
+
         Intent intent = new Intent(getApplicationContext(), CameraActivity.class);
         intent.putExtra("kernelSize", mKernelSize);
         intent.putExtra("filterMode", mFilterMode.getValue());
         intent.putExtra("colorSpace", mColorSpace.getValue());
         intent.putExtra("hue", mHue);
         intent.putExtra("hueRadius", mHueRadius);
-        intent.putExtra("saturation", mSaturation);
-        intent.putExtra("saturationRadius", mSaturationRadius);
-        intent.putExtra("value", mValue);
-        intent.putExtra("valueRadius", mValueRadius);
+        intent.putExtra("saturation", saturationInt);
+        intent.putExtra("saturationRadius", saturationRadiusInt);
+        intent.putExtra("value", valueInt);
+        intent.putExtra("valueRadius", valueRadiusInt);
         intent.putExtra("grayValue", mGrayValue);
         intent.putExtra("grayValueRadius", mGrayValueRadius);
         intent.putExtra("segmentationMethod", mSegmentationMethod.getValue());
         intent.putExtra("edgeDetectionMethod", mEdgeDetectionMethod.getValue());
+        intent.putExtra("markingMethod", mMarkingMethod.getValue());
+        intent.putExtra("backgroundRed", backgroundRed);
+        intent.putExtra("backgroundGreen", backgroundGreen);
+        intent.putExtra("backgroundBlue", backgroundBlue);
         startActivity(intent);
+
+
+
     }
 
     private void openGallery() {
@@ -173,12 +225,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initializeGradientView() {
-        mGradientDrawable = new GradientDrawable(
+        mThresholdGradient = new GradientDrawable(
                 GradientDrawable.Orientation.LEFT_RIGHT,
                 new int[] {normalizeGray(0), normalizeGray(255)});
 
         View gradientView = findViewById(R.id.gradientView);
-        gradientView.setBackground(mGradientDrawable);
+        gradientView.setBackground(mThresholdGradient);
     }
 
     private void initializeGraySliders() {
@@ -186,13 +238,13 @@ public class MainActivity extends AppCompatActivity {
 
         Slider grayValueSlider = findViewById(R.id.grayValueSlider);
         grayValueSlider.addOnChangeListener((slider, value, fromUser) -> {
-            mGrayValue = value;
+            mGrayValue = (int) value;
             setGradientColor();
         });
 
         Slider grayValueRadiusSlider = findViewById(R.id.grayValueRadiusSlider);
         grayValueRadiusSlider.addOnChangeListener((slider, value, fromUser) -> {
-            mGrayValueRadius = value;
+            mGrayValueRadius = (int) value;
             setGradientColor();
         });
     }
@@ -202,13 +254,13 @@ public class MainActivity extends AppCompatActivity {
 
         Slider hueSlider = findViewById(R.id.hueSlider);
         hueSlider.addOnChangeListener((slider, value, fromUser) -> {
-            mHue = value;
+            mHue = (int) value;
             setGradientColor();
         });
 
         Slider hueRadiusSlider = findViewById(R.id.hueRadiusSlider);
         hueRadiusSlider.addOnChangeListener((slider, value, fromUser) -> {
-            mHueRadius = value;
+            mHueRadius = (int) value;
             setGradientColor();
         });
 
@@ -237,6 +289,38 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    private void initializeBackgroundColorLayout() {
+        mBackgroundChangeLayout = findViewById(R.id.backgroundChangeLayout);
+
+        mBackgroundColorPreview = findViewById(R.id.backgroundColorView);
+
+        Slider hueSlider = findViewById(R.id.backgroudHueSlider);
+        hueSlider.addOnChangeListener((slider, value, fromUser) -> {
+            mBackgroundHue = (int) value;
+            setBackgroundPaneColor();
+        });
+
+        Slider saturationSlider = findViewById(R.id.backgroundSaturationSlider);
+        saturationSlider.addOnChangeListener((slider, value, fromUser) -> {
+            mBackgroundSaturation = value;
+            setBackgroundPaneColor();
+        });
+
+        Slider valueSlider = findViewById(R.id.backgroundValueSlider);
+        valueSlider.addOnChangeListener((slider, value, fromUser) -> {
+            mBackgroundValue = value;
+            setBackgroundPaneColor();
+        });
+
+
+    }
+
+
+    private void setBackgroundPaneColor() {
+        int color = normalizeColor(mBackgroundHue, mBackgroundSaturation, mBackgroundValue);
+        mBackgroundColorPreview.setBackgroundColor(color);
+    }
+
     private void setGradientColor() {
         int low, hi;
         if (mColorSpace == ColorSpace.COLOR) {
@@ -246,13 +330,14 @@ public class MainActivity extends AppCompatActivity {
             low = normalizeGray(mGrayValue - mGrayValueRadius);
             hi = normalizeGray(mGrayValue + mGrayValueRadius);
         }
-        mGradientDrawable.setColors(new int[] {low, hi});
+        mThresholdGradient.setColors(new int[] {low, hi});
     }
 
+
     private int normalizeColor(float hue, float saturation, float value) {
-        hue = normalizeInRangeFromZero(hue, 179);
-        saturation = normalizeInRangeFromZero(saturation, 255);
-        value = normalizeInRangeFromZero(value, 255);
+        hue = normalizeHue(hue);
+        saturation = normalizeInRangeFromZero(saturation, 1);
+        value = normalizeInRangeFromZero(value, 1);
         float[] hsv = new float[] {hue * 2, saturation, value};
         return Color.HSVToColor(hsv);
     }
@@ -293,5 +378,19 @@ public class MainActivity extends AppCompatActivity {
             mFilterDescriptionTextView.setVisibility(View.VISIBLE);
             mFilterSizeSelectorLayout.setVisibility(View.VISIBLE);
         }
+    }
+
+    private int normalizeHue(float value) {
+        if (value < 0) {
+            return (int) (179 - value);
+        } else if (value > 179) {
+            return (int) (value - 179);
+        }
+        return (int) value;
+    }
+
+
+    private int convertFrom1To255Range(float input) {
+        return (int) (input * 255);
     }
 }

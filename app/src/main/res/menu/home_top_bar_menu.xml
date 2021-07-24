@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/gallery"
+        android:icon="@drawable/ic_baseline_perm_media_24"
+        android:title="@string/sobel"
+        android:contentDescription="@string/segmentation"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/config"
+        android:icon="@drawable/ic_baseline_settings_24"
+        android:title="@string/sobel"
+        android:contentDescription="@string/segmentation"
+        app:showAsAction="ifRoom" />
+</menu>

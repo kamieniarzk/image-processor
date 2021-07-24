@@ -13,7 +13,7 @@
             android:id="@+id/galleryTopBar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:title="@string/welcome_text"
+            app:title="@string/gallery_button"
             app:navigationIcon="@drawable/ic_baseline_arrow_back_ios_24"
             style="@style/Widget.MaterialComponents.Toolbar.Primary"
             />

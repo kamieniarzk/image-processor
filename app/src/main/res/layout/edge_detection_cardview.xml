@@ -15,14 +15,24 @@
     app:contentPadding="16dp"
     app:strokeWidth="2dp"
     app:strokeColor="@color/grey"
-    android:visibility="gone"
     >
+
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:animateLayoutChanges="true">
+        <TextView
+            android:textAlignment="center"
+            android:fontFamily="@font/heebo_extra_light"
+            android:textSize="30sp"
+            android:textColor="@color/black"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/edge_detection"
+            android:scaleType="centerCrop"
+            />
         <RadioGroup
             android:checkedButton="@+id/sobelButton"
             android:layout_width="match_parent"

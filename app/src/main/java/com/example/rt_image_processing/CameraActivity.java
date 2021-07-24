@@ -14,6 +14,7 @@ import androidx.core.content.ContextCompat;
 import com.example.rt_image_processing.model.ColorSpace;
 import com.example.rt_image_processing.model.EdgeDetectionMethod;
 import com.example.rt_image_processing.model.FilterMode;
+import com.example.rt_image_processing.model.MarkingMethod;
 import com.example.rt_image_processing.model.SegmentationMethod;
 import com.example.rt_image_processing.processor.ImageProcessor;
 
@@ -21,8 +22,10 @@ import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
+import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
+import org.opencv.imgproc.Imgproc;
 
 import java.util.ArrayList;
 
@@ -78,13 +81,15 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
 
     @Override
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
+        System.gc();
+        if (mCurrentFrame != null) {
+            mCurrentFrame.release();
+        }
+
         mCurrentFrame = mImageProcessor.getMatFromInputFrame(inputFrame);
 
         mImageProcessor.filter(mCurrentFrame);
-        mImageProcessor.threshold(mCurrentFrame);
-        mImageProcessor.findAndDrawContours(mCurrentFrame);
-
-        return mCurrentFrame;
+        return mImageProcessor.threshold(mCurrentFrame);
     }
 
     private void checkPermissions() {
@@ -127,14 +132,18 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
                 .mColorSpace(ColorSpace.of(intent.getIntExtra("colorSpace", -1)))
                 .mHue(intent.getIntExtra("hue", 0))
                 .mHueRadius(intent.getIntExtra("hueRadius", 0))
-                .mSaturation(intent.getFloatExtra("saturation", 0))
-                .mSaturationRadius(intent.getFloatExtra("saturationRadius", 0))
-                .mValue(intent.getFloatExtra("value", 0))
-                .mValueRadius(intent.getFloatExtra("valueRadius", 0))
-                .mGrayValue(intent.getFloatExtra("grayValue", 0))
-                .mGrayValueRadius(intent.getFloatExtra("grayValueRadius", 0))
+                .mSaturation(intent.getIntExtra("saturation", 0))
+                .mSaturationRadius(intent.getIntExtra("saturationRadius", 0))
+                .mValue(intent.getIntExtra("value", 0))
+                .mValueRadius(intent.getIntExtra("valueRadius", 0))
+                .mGrayValue(intent.getIntExtra("grayValue", 0))
+                .mGrayValueRadius(intent.getIntExtra("grayValueRadius", 0))
                 .mSegmentationMethod(SegmentationMethod.of(intent.getIntExtra("segmentationMethod", 0)))
                 .mEdgeDetectionMethod(EdgeDetectionMethod.of((intent.getIntExtra("segmentationMethod", 0))))
+                .mMarkingMethod(MarkingMethod.of(intent.getIntExtra("markingMethod", 0)))
+                .mBackgroundRed(intent.getIntExtra("backgroundRed", 0))
+                .mBackgroundGreen(intent.getIntExtra("backgroundGreen", 0))
+                .mBackgroundBlue(intent.getIntExtra("backgroundBlue", 0))
                 .mContoursList(new ArrayList<>())
                 .build();
     }
