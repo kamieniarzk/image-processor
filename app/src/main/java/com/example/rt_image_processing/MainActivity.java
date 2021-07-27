@@ -2,6 +2,7 @@ package com.example.rt_image_processing;
 
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.view.View;
@@ -18,7 +19,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.rt_image_processing.model.ColorSpace;
 import com.example.rt_image_processing.model.EdgeDetectionMethod;
 import com.example.rt_image_processing.model.FilterMode;
-import com.example.rt_image_processing.model.MarkingMethod;
+import com.example.rt_image_processing.model.ExtractionMethod;
 import com.example.rt_image_processing.model.SegmentationMethod;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.card.MaterialCardView;
@@ -33,7 +34,7 @@ public class MainActivity extends AppCompatActivity {
     private LinearLayout mFilterSizeSelectorLayout;
     private LinearLayout mHsvSlidersLayout;
     private LinearLayout mGraySlidersLayout;
-    private LinearLayout mBackgroundChangeLayout;
+    private LinearLayout mColorSubsitutionLayout;
     private LinearLayout mDrawContoursLayout;
     private MaterialCardView mThresholdingCardview;
     private MaterialCardView mEdgeDetectionCardView;
@@ -43,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
     private FilterMode mFilterMode;
     private SegmentationMethod mSegmentationMethod;
     private EdgeDetectionMethod mEdgeDetectionMethod;
-    private MarkingMethod mMarkingMethod;
+    private ExtractionMethod mExtractionMethod;
     private int mGrayValue;
     private int mGrayValueRadius;
     private int mHue;
@@ -58,6 +59,13 @@ public class MainActivity extends AppCompatActivity {
     private float mBackgroundValue;
     private GradientDrawable mThresholdGradient;
     private View mBackgroundColorPreview;
+
+    private int mContourHue;
+    private float mContourSaturation;
+    private float mContourValue;
+    private float mContourArea;
+    private int mContourThickness;
+    private View mContourPreview;
 
 
     @Override
@@ -77,22 +85,28 @@ public class MainActivity extends AppCompatActivity {
         initializeColorButton();
         initializeSegmentationLayout();
         initializeEdgeDetectionLayout();
-        initializeBackgroundColorLayout();
+        initializeColorSubstitutionConfigLayout();
         initializeMarkingLayout();
     }
 
     private void initializeMarkingLayout() {
+        mColorSubsitutionLayout = findViewById(R.id.substitute_color_layout);
         mDrawContoursLayout = findViewById(R.id.draw_contours_layout);
         RadioButton backgroundChangeButton = findViewById(R.id.drawContoursButton);
-        backgroundChangeButton.setOnCheckedChangeListener((comoundButton, b) -> toggleMarkingMethod());
-        toggleMarkingMethod();
+        backgroundChangeButton.setOnCheckedChangeListener((comoundButton, b) -> toggleExtractionMethod());
+        toggleExtractionMethod();
+        initializeContourDrawingConfig();
     }
 
-    private void toggleMarkingMethod() {
-        if (mMarkingMethod == MarkingMethod.BACKGROUND_CHANGE || mMarkingMethod == null) {
-            mMarkingMethod = MarkingMethod.DRAW_CONTOURS;
+    private void toggleExtractionMethod() {
+        if (mExtractionMethod == ExtractionMethod.DRAW_CONTOURS || mExtractionMethod == null) {
+            mExtractionMethod = ExtractionMethod.BACKGROUND_CHANGE;
+            mColorSubsitutionLayout.setVisibility(View.VISIBLE);
+            mDrawContoursLayout.setVisibility(View.GONE);
         } else {
-            mMarkingMethod = MarkingMethod.BACKGROUND_CHANGE;
+            mExtractionMethod = ExtractionMethod.DRAW_CONTOURS;
+            mColorSubsitutionLayout.setVisibility(View.GONE);
+            mDrawContoursLayout.setVisibility(View.VISIBLE);
         }
     }
 
@@ -166,10 +180,15 @@ public class MainActivity extends AppCompatActivity {
         int valueInt = convertFrom1To255Range(mValue);
         int valueRadiusInt = convertFrom1To255Range(mValueRadius);
 
-        int rgbBackground = Color.HSVToColor(new float[] {mBackgroundHue, mBackgroundSaturation, mBackgroundValue});
+        int rgbBackground = Color.HSVToColor(new float[] {2 * mBackgroundHue, mBackgroundSaturation, mBackgroundValue});
         int backgroundRed = Color.red(rgbBackground);
         int backgroundGreen = Color.green(rgbBackground);
         int backgroundBlue = Color.blue(rgbBackground);
+
+        int rgbContour = Color.HSVToColor(new float[] {2 * mContourHue, mContourSaturation, mContourValue});
+        int contourRed = Color.red(rgbContour);
+        int contourGreen = Color.green(rgbContour);
+        int contourBlue = Color.blue(rgbContour);
 
         Intent intent = new Intent(getApplicationContext(), CameraActivity.class);
         intent.putExtra("kernelSize", mKernelSize);
@@ -185,14 +204,16 @@ public class MainActivity extends AppCompatActivity {
         intent.putExtra("grayValueRadius", mGrayValueRadius);
         intent.putExtra("segmentationMethod", mSegmentationMethod.getValue());
         intent.putExtra("edgeDetectionMethod", mEdgeDetectionMethod.getValue());
-        intent.putExtra("markingMethod", mMarkingMethod.getValue());
+        intent.putExtra("markingMethod", mExtractionMethod.getValue());
         intent.putExtra("backgroundRed", backgroundRed);
         intent.putExtra("backgroundGreen", backgroundGreen);
         intent.putExtra("backgroundBlue", backgroundBlue);
+        intent.putExtra("contourRed", contourRed);
+        intent.putExtra("contourGreen", contourGreen);
+        intent.putExtra("contourBlue", contourBlue);
+        intent.putExtra("contourArea", mContourArea);
+        intent.putExtra("contourThickness", mContourThickness);
         startActivity(intent);
-
-
-
     }
 
     private void openGallery() {
@@ -231,6 +252,7 @@ public class MainActivity extends AppCompatActivity {
 
         View gradientView = findViewById(R.id.gradientView);
         gradientView.setBackground(mThresholdGradient);
+
     }
 
     private void initializeGraySliders() {
@@ -289,9 +311,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void initializeBackgroundColorLayout() {
-        mBackgroundChangeLayout = findViewById(R.id.backgroundChangeLayout);
-
+    private void initializeColorSubstitutionConfigLayout() {
         mBackgroundColorPreview = findViewById(R.id.backgroundColorView);
 
         Slider hueSlider = findViewById(R.id.backgroudHueSlider);
@@ -311,14 +331,53 @@ public class MainActivity extends AppCompatActivity {
             mBackgroundValue = value;
             setBackgroundPaneColor();
         });
-
-
     }
 
+    private void initializeContourDrawingConfig() {
+        mContourThickness = 10;
+        mContourPreview = findViewById(R.id.contourPreview);
+        mContourPreview.setBackgroundColor(normalizeColor(180, 1 , 1));
+
+        Slider contourHueSlider = findViewById(R.id.contourHueSlider);
+        contourHueSlider.addOnChangeListener((slider, value, fromUser) -> {
+            mContourHue = (int) value;
+            setContourPreview();
+        });
+
+        Slider contourSaturationSlider = findViewById(R.id.contourSaturationSlider);
+        contourSaturationSlider.addOnChangeListener((slider, value, fromUser) -> {
+            mContourSaturation = value;
+            setContourPreview();
+        });
+
+        Slider contourValueSlider = findViewById(R.id.contourValueSlider);
+        contourValueSlider.addOnChangeListener((slider, value, fromUser) -> {
+            mContourValue = value;
+            setContourPreview();
+        });
+
+        Slider contourAreaSlider = findViewById(R.id.contourAreaSlider);
+        contourAreaSlider.addOnChangeListener((slider, value, fromUser) -> {
+            mContourArea = value;
+            setContourPreview();
+        });
+
+        Slider contourThicknessSlider = findViewById(R.id.contourThicknessSlider);
+        contourThicknessSlider.addOnChangeListener((slider, value, fromUser) -> {
+            mContourThickness = (int) value;
+            setContourPreview();
+        });
+    }
+
+    private void setContourPreview() {
+        mContourPreview.getLayoutParams().height = mContourThickness;
+        mContourPreview.setBackgroundColor(normalizeColor(mContourHue, mContourSaturation, mContourValue));
+        mContourPreview.requestLayout();
+    }
 
     private void setBackgroundPaneColor() {
         int color = normalizeColor(mBackgroundHue, mBackgroundSaturation, mBackgroundValue);
-        mBackgroundColorPreview.setBackgroundColor(color);
+        mBackgroundColorPreview.getBackground().setTint(color);
     }
 
     private void setGradientColor() {

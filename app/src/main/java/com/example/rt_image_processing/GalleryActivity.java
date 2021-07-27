@@ -80,5 +80,11 @@ public class GalleryActivity extends AppCompatActivity {
             requestPermissionLauncher.launch(
                     Manifest.permission.READ_EXTERNAL_STORAGE);
         }
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+            initVideos();
+        } else {
+            requestPermissionLauncher.launch(
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        }
     }
 }

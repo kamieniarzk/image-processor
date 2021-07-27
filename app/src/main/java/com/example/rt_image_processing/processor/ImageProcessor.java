@@ -4,20 +4,21 @@ import android.util.Log;
 
 import com.example.rt_image_processing.model.ColorSpace;
 import com.example.rt_image_processing.model.EdgeDetectionMethod;
+import com.example.rt_image_processing.model.ExtractionMethod;
 import com.example.rt_image_processing.model.FilterMode;
-import com.example.rt_image_processing.model.MarkingMethod;
 import com.example.rt_image_processing.model.SegmentationMethod;
 
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
+import org.opencv.core.Point;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
+import org.opencv.imgproc.Moments;
 
-import java.util.Collections;
-import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 
 import lombok.Builder;
@@ -58,21 +59,29 @@ public class ImageProcessor {
     private Mat mAndedFrame;
     private Mat mFinalFrame;
     private Scalar mContourColor;
+    private Mat mFilteredFrame;
 
 
     // util
     private final List<MatOfPoint> mContoursList;
-    private Comparator<MatOfPoint> matOfPointComparator;
     private SegmentationMethod mSegmentationMethod;
+    private Mat mRgbaFrame;
 
     // marking
-    private MarkingMethod mMarkingMethod;
+    private ExtractionMethod mExtractionMethod;
     private int mBackgroundRed;
     private int mBackgroundGreen;
     private int mBackgroundBlue;
     private Mat mBackgroundColorMat;
     private Scalar mRgbBackgroundScalar;
     private Mat mNegatedMask;
+    private int mContourRed;
+    private int mContourGreen;
+    private int mContourBlue;
+    private float mContourArea;
+    private int mContourThickness;
+    private Scalar mRgbContourScalar;
+
 
     public Mat getMatFromInputFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
         if (mColorSpace == ColorSpace.COLOR) {
@@ -82,33 +91,42 @@ public class ImageProcessor {
         }
     }
 
-    public void filter(Mat input) {
+    public Mat filterStep(Mat input) {
         switch (mFilterMode) {
-            case Averaging: {
-                Imgproc.blur(input, input, mKernelSize);
+            case Averaging:
+                Imgproc.blur(input, mFinalFrame, mKernelSize);
                 break;
-            }
-            case Gaussian: {
-                Imgproc.GaussianBlur(input, input, mKernelSize, 0);
+            case Gaussian:
+                Imgproc.GaussianBlur(input, mFilteredFrame, mKernelSize, 0);
                 break;
-            }
-            case Median: {
-                Imgproc.medianBlur(input, input, mKernelSizeInt);
+            case Median:
+                Imgproc.medianBlur(input, mFilteredFrame, mKernelSizeInt);
                 break;
-            }
+            default:
+                return input;
         }
+        input.release();
+        return mFilteredFrame;
     }
 
-    public void segmentationStep(Mat input) {
+    public Mat segmentationStep(Mat input) {
         if (mSegmentationMethod == SegmentationMethod.THRESHOLDING) {
-            threshold(input);
+            return threshold(input);
         } else {
-            detectEdges(input);
+            return detectEdges(input);
         }
     }
 
-    private void detectEdges(Mat input) {
+    public Mat extractionStep(Mat input) {
+        if (mExtractionMethod == ExtractionMethod.DRAW_CONTOURS) {
+            return findAndDrawContours(input);
+        } else {
+            return substituteColour(input);
+        }
+    }
 
+    private Mat detectEdges(Mat input) {
+        return input; //TODO
     }
 
     public Mat threshold(Mat input) {
@@ -125,13 +143,19 @@ public class ImageProcessor {
         } else {
             Imgproc.threshold(input, mBinaryMask, mGrayLow, mGrayHi, Imgproc.THRESH_BINARY);
         }
+        return input;
+    }
+
+    public Mat substituteColour(Mat input) {
         Imgproc.cvtColor(mBinaryMask, mRgbMask, Imgproc.COLOR_GRAY2RGBA);
         mBinaryMask.release();
 
-        mBackgroundColorMat = new Mat(mRgbMask.size(), mRgbMask.type());
+        if (mBackgroundColorMat == null) {
+            mBackgroundColorMat = new Mat(mRgbMask.size(), mRgbMask.type());
+            mBackgroundColorMat.setTo(mRgbBackgroundScalar);
+        }
 
         Core.bitwise_not(mRgbMask, mNegatedMask);
-        mBackgroundColorMat.setTo(mRgbBackgroundScalar);
 
         Core.bitwise_and(input, mNegatedMask, mAndedFrame);
         input.release();
@@ -139,7 +163,6 @@ public class ImageProcessor {
 
         Core.bitwise_and(mBackgroundColorMat, mRgbMask, mBackgroundColorMask);
         mRgbMask.release();
-        mBackgroundColorMat.release();
 
         Core.add(mAndedFrame, mBackgroundColorMask, mFinalFrame);
         mAndedFrame.release();
@@ -148,18 +171,38 @@ public class ImageProcessor {
         return mFinalFrame;
     }
 
-    public void findAndDrawContours(Mat input) {
-
+    public Mat findAndDrawContours(Mat input) {
         Imgproc.findContours(mBinaryMask, mContoursList, mHierarchy, Imgproc.RETR_LIST, Imgproc.CHAIN_APPROX_SIMPLE);
-        Collections.sort(mContoursList, matOfPointComparator);
         if (!mContoursList.isEmpty() && mColorSpace == ColorSpace.GRAYSCALE) {
-            Imgproc.cvtColor(input, input, Imgproc.COLOR_GRAY2BGR);
+            Imgproc.cvtColor(input, mRgbaFrame, Imgproc.COLOR_GRAY2BGRA);
+            input.release();
+            input = mRgbaFrame;
         }
-        for (int i = 0; i < 2 && i < mContoursList.size(); i++) {
-            Imgproc.drawContours(input, mContoursList, i, mContourColor, 10);
+
+        double frameArea = input.width() * input.height();
+        Iterator<MatOfPoint> iterator = mContoursList.iterator();
+
+        while(iterator.hasNext()) {
+            if (Imgproc.contourArea(iterator.next()) < mContourArea * frameArea) {
+                iterator.remove();
+            }
+        }
+
+        for (int i = 0; i < mContoursList.size(); i++) {
+            double contourArea = Imgproc.contourArea(mContoursList.get(i));
+            if (contourArea >= mContourArea * frameArea) {
+                Moments moments = Imgproc.moments(mContoursList.get(i));
+                Point contourCenter = new Point(new double[] {
+                        moments.get_m10() / moments.get_m00(),
+                        moments.get_m01() / moments.get_m00()
+                });
+                Imgproc.drawContours(input, mContoursList, i, mRgbContourScalar, mContourThickness);
+                Imgproc.putText(input, Double.toString(contourArea), contourCenter, Imgproc.FONT_HERSHEY_SIMPLEX, 2, mRgbContourScalar, mContourThickness);
+            }
         }
 
         mContoursList.clear();
+        return input;
     }
 
     public void initializeOpenCvObjects() {
@@ -184,19 +227,15 @@ public class ImageProcessor {
         mBackgroundColorMask = new Mat();
         mAndedFrame = new Mat();
         mFinalFrame = new Mat();
-        matOfPointComparator = (m1, m2) -> {
-            double a = Imgproc.contourArea(m1);
-            double b = Imgproc.contourArea(m2);
-            return Double.compare(b, a);
-        };
-        mRgbBackgroundScalar = new Scalar(mBackgroundRed, mBackgroundGreen, mBackgroundRed);
+        mFilteredFrame = new Mat();
+        mRgbBackgroundScalar = new Scalar(mBackgroundRed, mBackgroundGreen, mBackgroundBlue, 0);
+        mRgbContourScalar = new Scalar(mContourRed, mContourGreen, mContourBlue, 0);
     }
 
     public void freeOpenCvObjects() {
         mHierarchy.release();
         mDownScaledFrame.release();
         mNegatedMask.release();
-        mBackgroundColorMat.release();
         mBinaryMask.release();
         mHsvFrame.release();
     }

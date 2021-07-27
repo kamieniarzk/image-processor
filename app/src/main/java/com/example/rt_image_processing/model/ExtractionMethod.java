@@ -2,18 +2,18 @@ package com.example.rt_image_processing.model;
 
 import lombok.Getter;
 
-public enum MarkingMethod {
+public enum ExtractionMethod {
     BACKGROUND_CHANGE(0), DRAW_CONTOURS(1);
 
     @Getter
     private final int value;
 
-    MarkingMethod(int value) {
+    ExtractionMethod(int value) {
         this.value = value;
     }
 
-    public static MarkingMethod of(int value) {
-        for (MarkingMethod method : values()) {
+    public static ExtractionMethod of(int value) {
+        for (ExtractionMethod method : values()) {
             if (method.value == value) {
                 return method;
             }

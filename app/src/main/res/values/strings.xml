@@ -42,6 +42,10 @@
     <string name="smoothing_label">Smoothing</string>
     <string name="marking">In this step of processing ...</string>
     <string name="marking_label">Marking</string>
-    <string name="background_change">Change background</string>
-    <string name="draw_contours">Draw contours and mark</string>
+    <string name="substitute_color">Substitute color</string>
+    <string name="draw_contours">Draw contours and label</string>
+    <string name="contour_thickness">Contour thickness</string>
+    <string name="minimal_contour_area">Minimal contour area</string>
+    <string name="contour_line_preview">Contour line preview</string>
+    <string name="color_preview">Color preview</string>
 </resources>

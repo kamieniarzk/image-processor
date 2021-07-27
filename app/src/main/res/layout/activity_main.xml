@@ -45,7 +45,7 @@
             <include layout="@layout/segmentation_cardview"/>
             <include layout="@layout/edge_detection_cardview"/>
             <include layout="@layout/thresholding_cardview"/>
-            <include layout="@layout/marking_cardview"/>
+            <include layout="@layout/extraction_cardview"/>
 
 
             <Button
