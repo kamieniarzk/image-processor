@@ -1,13 +1,10 @@
 package com.example.rt_image_processing;
 
 import android.Manifest;
-import android.content.ContentUris;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
-import android.widget.ImageButton;
+import android.os.Environment;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -16,9 +13,14 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.rt_image_processing.model.Video;
+import com.example.rt_image_processing.util.GridLayoutManagerWrapper;
 import com.google.android.material.appbar.MaterialToolbar;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.Objects;
+
 
 public class GalleryActivity extends AppCompatActivity {
     private ActivityResultLauncher<String> requestPermissionLauncher;
@@ -30,10 +32,8 @@ public class GalleryActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_gallery);
-
         initializeViews();
         checkPermissions();
-
     }
 
     @Override
@@ -42,9 +42,15 @@ public class GalleryActivity extends AppCompatActivity {
         checkPermissions();
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        videosList.clear();
+    }
+
     private void initializeViews() {
         RecyclerView recyclerView = findViewById(R.id.recyclerView_videos);
-        recyclerView.setLayoutManager(new GridLayoutManager(this, 3));
+        recyclerView.setLayoutManager(new GridLayoutManagerWrapper(this, 3));
         adapterVideoList = new VideoAdapter(this, videosList);
         recyclerView.setAdapter(adapterVideoList);
         MaterialToolbar topBar = findViewById(R.id.galleryTopBar);
@@ -52,20 +58,15 @@ public class GalleryActivity extends AppCompatActivity {
     }
 
     public void initVideos() {
-        String[] projection = {MediaStore.Video.Media._ID};
-        String sortOrder = MediaStore.Video.Media.DATE_ADDED + " DESC";
-
-        Cursor cursor = getApplication().getContentResolver().query(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, projection, null, null, sortOrder);
-        if (cursor != null) {
-            int idColumn = cursor.getColumnIndexOrThrow(MediaStore.Video.Media._ID);
-            while (cursor.moveToNext()) {
-                long id = cursor.getLong(idColumn);
-                Uri data = ContentUris.withAppendedId(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, id);
-                videosList.add(new Video(id, data));
+        new Thread(() -> {
+            String mediaPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES).getPath();
+            File mediaDir = new File(mediaPath);
+            for (File file : Objects.requireNonNull(mediaDir.listFiles())) {
+                Uri videoUri = Uri.fromFile(file);
+                videosList.add(new Video(videoUri));
                 runOnUiThread(() -> adapterVideoList.notifyItemInserted(videosList.size() - 1));
             }
-            cursor.close();
-        }
+        }).start();
     }
 
     private void checkPermissions() {
@@ -74,17 +75,14 @@ public class GalleryActivity extends AppCompatActivity {
                 return;
             });
         }
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-            initVideos();
-        } else {
-            requestPermissionLauncher.launch(
-                    Manifest.permission.READ_EXTERNAL_STORAGE);
-        }
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-            initVideos();
-        } else {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             requestPermissionLauncher.launch(
                     Manifest.permission.WRITE_EXTERNAL_STORAGE);
         }
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissionLauncher.launch(
+                    Manifest.permission.READ_EXTERNAL_STORAGE);
+        }
+        initVideos();
     }
 }

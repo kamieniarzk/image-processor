@@ -12,7 +12,7 @@
 /captures
 .externalNativeBuild
 .cxx
-
+*.gradle
 # Project exclude paths
 /openCVLibrary343/build/
 /openCVLibrary343/build/intermediates/javac/debug/classes/

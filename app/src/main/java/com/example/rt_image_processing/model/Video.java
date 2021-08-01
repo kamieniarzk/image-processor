@@ -1,4 +1,4 @@
-package com.example.rt_image_processing;
+package com.example.rt_image_processing.model;
 
 import android.net.Uri;
 
@@ -10,6 +10,5 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 public class Video {
-    private long id;
     private Uri data;
 }

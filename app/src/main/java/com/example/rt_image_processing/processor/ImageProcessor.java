@@ -1,5 +1,6 @@
 package com.example.rt_image_processing.processor;
 
+import android.annotation.SuppressLint;
 import android.util.Log;
 
 import com.example.rt_image_processing.model.ColorSpace;
@@ -171,6 +172,7 @@ public class ImageProcessor {
         return mFinalFrame;
     }
 
+    @SuppressLint("DefaultLocale")
     public Mat findAndDrawContours(Mat input) {
         Imgproc.findContours(mBinaryMask, mContoursList, mHierarchy, Imgproc.RETR_LIST, Imgproc.CHAIN_APPROX_SIMPLE);
         if (!mContoursList.isEmpty() && mColorSpace == ColorSpace.GRAYSCALE) {
@@ -197,7 +199,8 @@ public class ImageProcessor {
                         moments.get_m01() / moments.get_m00()
                 });
                 Imgproc.drawContours(input, mContoursList, i, mRgbContourScalar, mContourThickness);
-                Imgproc.putText(input, Double.toString(contourArea), contourCenter, Imgproc.FONT_HERSHEY_SIMPLEX, 2, mRgbContourScalar, mContourThickness);
+                Imgproc.putText(input, String.format("%.2f", contourArea/frameArea), contourCenter, Imgproc.FONT_HERSHEY_SIMPLEX, 2, mRgbContourScalar, mContourThickness);
+
             }
         }
 

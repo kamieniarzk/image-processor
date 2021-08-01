@@ -11,6 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.rt_image_processing.model.Video;
 
 import java.util.ArrayList;
 
@@ -37,7 +38,7 @@ public class VideoAdapter extends RecyclerView.Adapter<VideoAdapter.VideoViewHol
 
         holder.itemView.setOnClickListener(view -> {
             Intent intent = new Intent(view.getContext(), PlayerActivity.class);
-            intent.putExtra("videoId", item.getId());
+            intent.putExtra("videoUri", item.getData());
             view.getContext().startActivity(intent);
         });
     }

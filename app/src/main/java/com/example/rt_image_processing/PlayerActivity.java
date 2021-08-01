@@ -1,10 +1,8 @@
 package com.example.rt_image_processing;
 
 import android.app.Activity;
-import android.content.ContentUris;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
 
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.source.MediaSource;
@@ -16,7 +14,7 @@ import com.google.android.exoplayer2.util.Util;
 
 public class PlayerActivity extends Activity {
 
-    private long videoId;
+    private Uri mVideoUri;
     private PlayerView playerView;
     private SimpleExoPlayer player;
 
@@ -27,7 +25,7 @@ public class PlayerActivity extends Activity {
 
         initializeViews();
         if (getIntent().getExtras() != null) {
-            videoId = getIntent().getExtras().getLong("videoId");
+            mVideoUri = getIntent().getParcelableExtra("videoUri");
         }
     }
 
@@ -39,8 +37,9 @@ public class PlayerActivity extends Activity {
         player = new SimpleExoPlayer.Builder(this).build();
         playerView.setPlayer(player);
 
-        Uri videoUri = ContentUris.withAppendedId(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, videoId);
-        MediaSource mediaSource = buildMediaSource(videoUri);
+//        Uri videoUri = ContentUris.withAppendedId(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, videoId);
+
+        MediaSource mediaSource = buildMediaSource(mVideoUri);
         player.setMediaSource(mediaSource);
         player.prepare();
         player.setPlayWhenReady(true);

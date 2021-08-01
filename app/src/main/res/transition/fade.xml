@@ -1,5 +1,5 @@
 <transitionSet xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- changeImageTransform is used for the ImageViews which are shared -->
     <fade
-        android:duration="300"/>
+        android:duration="150"/>
 </transitionSet>
