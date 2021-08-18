@@ -1,4 +1,4 @@
-package com.example.rt_image_processing;
+package com.example.imageprocessor;
 
 import android.content.Context;
 import android.content.Intent;
@@ -11,7 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
-import com.example.rt_image_processing.model.Video;
+import com.example.imageprocessor.model.Video;
 
 import java.util.ArrayList;
 
@@ -34,10 +34,14 @@ public class VideoAdapter extends RecyclerView.Adapter<VideoAdapter.VideoViewHol
     @Override
     public void onBindViewHolder(@NonNull VideoViewHolder holder, int position) {
         final Video item = videosList.get(position);
-        Glide.with(context).load(item.getData()).into(holder.imgView_thumbnail);
+        try {
+            Glide.with(context).load(item.getData()).into(holder.imgViewThumbnail);
+        } catch (Exception e) {
+
+        }
 
         holder.itemView.setOnClickListener(view -> {
-            Intent intent = new Intent(view.getContext(), PlayerActivity.class);
+            Intent intent = new Intent(view.getContext(), VideoActivity.class);
             intent.putExtra("videoUri", item.getData());
             view.getContext().startActivity(intent);
         });
@@ -49,11 +53,11 @@ public class VideoAdapter extends RecyclerView.Adapter<VideoAdapter.VideoViewHol
     }
 
     static class VideoViewHolder extends RecyclerView.ViewHolder {
-        ImageView imgView_thumbnail;
+        ImageView imgViewThumbnail;
 
         public VideoViewHolder(@NonNull View itemView) {
             super(itemView);
-            imgView_thumbnail = itemView.findViewById(R.id.thumbnailImageView);
+            imgViewThumbnail = itemView.findViewById(R.id.thumbnailImageView);
         }
     }
 }

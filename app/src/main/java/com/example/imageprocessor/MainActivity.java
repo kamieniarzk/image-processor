@@ -1,8 +1,7 @@
-package com.example.rt_image_processing;
+package com.example.imageprocessor;
 
 import android.content.Intent;
 import android.graphics.Color;
-import android.graphics.PorterDuff;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.view.View;
@@ -16,11 +15,15 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.rt_image_processing.model.ColorSpace;
-import com.example.rt_image_processing.model.EdgeDetectionMethod;
-import com.example.rt_image_processing.model.FilterMode;
-import com.example.rt_image_processing.model.ExtractionMethod;
-import com.example.rt_image_processing.model.SegmentationMethod;
+import com.example.imageprocessor.model.ColorSpace;
+import com.example.imageprocessor.model.EdgeDetectionMethod;
+import com.example.imageprocessor.model.FilteringMethod;
+import com.example.imageprocessor.model.MarkingMethod;
+import com.example.imageprocessor.model.SegmentationMethod;
+import com.example.imageprocessor.processor.EdgeDetectionParams;
+import com.example.imageprocessor.processor.FilteringParams;
+import com.example.imageprocessor.processor.MarkingParams;
+import com.example.imageprocessor.processor.ThresholdingParams;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.slider.Slider;
@@ -30,6 +33,8 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
     private static final List<Integer> KERNEL_SIZES = List.of(3, 5, 7, 9);
     private static final int[] KERNEL_TYPES = new int[]{R.string.averaging, R.string.gaussian, R.string.median};
+
+    // GUI
     private TextView mFilterDescriptionTextView;
     private LinearLayout mFilterSizeSelectorLayout;
     private LinearLayout mHsvSlidersLayout;
@@ -39,12 +44,17 @@ public class MainActivity extends AppCompatActivity {
     private MaterialCardView mThresholdingCardview;
     private MaterialCardView mEdgeDetectionCardView;
     private MaterialToolbar mToolbar;
+    private GradientDrawable mThresholdGradient;
+    private View mBackgroundColorPreview;
+    private View mContourPreview;
+
+    // config
     private int mKernelSize;
     private ColorSpace mColorSpace;
-    private FilterMode mFilterMode;
+    private FilteringMethod mFilteringMethod;
     private SegmentationMethod mSegmentationMethod;
     private EdgeDetectionMethod mEdgeDetectionMethod;
-    private ExtractionMethod mExtractionMethod;
+    private MarkingMethod mMarkingMethod;
     private int mGrayValue;
     private int mGrayValueRadius;
     private int mHue;
@@ -53,19 +63,16 @@ public class MainActivity extends AppCompatActivity {
     private float mValue;
     private float mValueRadius;
     private float mSaturationRadius;
-
     private int mBackgroundHue;
     private float mBackgroundSaturation;
     private float mBackgroundValue;
-    private GradientDrawable mThresholdGradient;
-    private View mBackgroundColorPreview;
-
     private int mContourHue;
     private float mContourSaturation;
     private float mContourValue;
     private float mContourArea;
     private int mContourThickness;
-    private View mContourPreview;
+    private double mCannyT1;
+    private double mCannyT2;
 
 
     @Override
@@ -87,6 +94,15 @@ public class MainActivity extends AppCompatActivity {
         initializeEdgeDetectionLayout();
         initializeColorSubstitutionConfigLayout();
         initializeMarkingLayout();
+        initializeCannySliders();
+    }
+
+    private void initializeCannySliders() {
+        Slider threshold1 = findViewById(R.id.cannyThreshold1);
+        threshold1.addOnChangeListener((slider, value, fromUser) -> mCannyT1 = value);
+
+        Slider threshold2 = findViewById(R.id.cannyThreshold2);
+        threshold2.addOnChangeListener((slider, value, fromUser) -> mCannyT2 = value);
     }
 
     private void initializeMarkingLayout() {
@@ -99,12 +115,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void toggleExtractionMethod() {
-        if (mExtractionMethod == ExtractionMethod.DRAW_CONTOURS || mExtractionMethod == null) {
-            mExtractionMethod = ExtractionMethod.BACKGROUND_CHANGE;
+        if (mMarkingMethod == MarkingMethod.DRAW_CONTOURS || mMarkingMethod == null) {
+            mMarkingMethod = MarkingMethod.BACKGROUND_CHANGE;
             mColorSubsitutionLayout.setVisibility(View.VISIBLE);
             mDrawContoursLayout.setVisibility(View.GONE);
         } else {
-            mExtractionMethod = ExtractionMethod.DRAW_CONTOURS;
+            mMarkingMethod = MarkingMethod.DRAW_CONTOURS;
             mColorSubsitutionLayout.setVisibility(View.GONE);
             mDrawContoursLayout.setVisibility(View.VISIBLE);
         }
@@ -170,15 +186,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void openCamera() {
-        if (mFilterMode == null || mColorSpace == null) {
+        if (mFilteringMethod == null || mColorSpace == null) {
             Toast.makeText(this, "Color space and filter mode must be specified!", Toast.LENGTH_SHORT).show();
             return;
         }
-
-        int saturationInt = convertFrom1To255Range(mSaturation);
-        int saturationRadiusInt = convertFrom1To255Range(mSaturationRadius);
-        int valueInt = convertFrom1To255Range(mValue);
-        int valueRadiusInt = convertFrom1To255Range(mValueRadius);
 
         int rgbBackground = Color.HSVToColor(new float[] {2 * mBackgroundHue, mBackgroundSaturation, mBackgroundValue});
         int backgroundRed = Color.red(rgbBackground);
@@ -190,29 +201,47 @@ public class MainActivity extends AppCompatActivity {
         int contourGreen = Color.green(rgbContour);
         int contourBlue = Color.blue(rgbContour);
 
+        ThresholdingParams thresholdingParams = new ThresholdingParams(
+                mHue,
+                mHueRadius,
+                mSaturation,
+                mSaturationRadius,
+                mValue,
+                mValueRadius,
+                mGrayValue,
+                mGrayValueRadius
+        );
+
+        FilteringParams filteringParams = new FilteringParams(
+                mFilteringMethod.getValue(),
+                mKernelSize
+        );
+
+        MarkingParams markingParams = new MarkingParams(
+                mMarkingMethod,
+                backgroundRed,
+                backgroundGreen,
+                backgroundBlue,
+                contourRed,
+                contourGreen,
+                contourBlue,
+                mContourArea,
+                mContourThickness
+        );
+
+        EdgeDetectionParams edgeDetectionParams = new EdgeDetectionParams(
+                mEdgeDetectionMethod,
+                mCannyT1,
+                mCannyT2
+        );
+
         Intent intent = new Intent(getApplicationContext(), CameraActivity.class);
-        intent.putExtra("kernelSize", mKernelSize);
-        intent.putExtra("filterMode", mFilterMode.getValue());
         intent.putExtra("colorSpace", mColorSpace.getValue());
-        intent.putExtra("hue", mHue);
-        intent.putExtra("hueRadius", mHueRadius);
-        intent.putExtra("saturation", saturationInt);
-        intent.putExtra("saturationRadius", saturationRadiusInt);
-        intent.putExtra("value", valueInt);
-        intent.putExtra("valueRadius", valueRadiusInt);
-        intent.putExtra("grayValue", mGrayValue);
-        intent.putExtra("grayValueRadius", mGrayValueRadius);
+        intent.putExtra("filteringParams", filteringParams);
         intent.putExtra("segmentationMethod", mSegmentationMethod.getValue());
-        intent.putExtra("edgeDetectionMethod", mEdgeDetectionMethod.getValue());
-        intent.putExtra("markingMethod", mExtractionMethod.getValue());
-        intent.putExtra("backgroundRed", backgroundRed);
-        intent.putExtra("backgroundGreen", backgroundGreen);
-        intent.putExtra("backgroundBlue", backgroundBlue);
-        intent.putExtra("contourRed", contourRed);
-        intent.putExtra("contourGreen", contourGreen);
-        intent.putExtra("contourBlue", contourBlue);
-        intent.putExtra("contourArea", mContourArea);
-        intent.putExtra("contourThickness", mContourThickness);
+        intent.putExtra("thresholdingParams", thresholdingParams);
+        intent.putExtra("edgeDetectionParams", edgeDetectionParams);
+        intent.putExtra("markingParams", markingParams);
         startActivity(intent);
     }
 
@@ -227,12 +256,12 @@ public class MainActivity extends AppCompatActivity {
         mFilterDescriptionTextView = findViewById(R.id.filterDescriptionText);
 
         AutoCompleteTextView filterModeSpinner = findViewById(R.id.filterModeSpinner);
-        final FilterMode[] filterModes = FilterMode.values();
-        ArrayAdapter<FilterMode> modeAdapter = new ArrayAdapter<>(this, R.layout.list_item, filterModes);
+        final FilteringMethod[] filteringMethods = FilteringMethod.values();
+        ArrayAdapter<FilteringMethod> modeAdapter = new ArrayAdapter<>(this, R.layout.list_item, filteringMethods);
         filterModeSpinner.setAdapter(modeAdapter);
-        filterModeSpinner.setOnItemClickListener((adapterView, view, i, l) -> setFilterMode(filterModes[i], i));
-        filterModeSpinner.setText(FilterMode.None.name(), false);
-        setFilterMode(filterModes[0], 0); // None
+        filterModeSpinner.setOnItemClickListener((adapterView, view, i, l) -> setFilterMode(filteringMethods[i], i));
+        filterModeSpinner.setText(FilteringMethod.None.name(), false);
+        setFilterMode(filteringMethods[0], 0); // None
     }
 
     private void initializeKernelSizeSpinner() {
@@ -425,11 +454,12 @@ public class MainActivity extends AppCompatActivity {
             mHsvSlidersLayout.setVisibility(View.GONE);
             mGraySlidersLayout.setVisibility(View.VISIBLE);
         }
+        setGradientColor();
     }
 
-    private void setFilterMode(FilterMode mode, int index) {
-        mFilterMode = mode;
-        if (mFilterMode == FilterMode.None) {
+    private void setFilterMode(FilteringMethod mode, int index) {
+        mFilteringMethod = mode;
+        if (mFilteringMethod == FilteringMethod.None) {
             mFilterDescriptionTextView.setVisibility(View.GONE);
             mFilterSizeSelectorLayout.setVisibility(View.GONE);
         } else {
@@ -446,10 +476,5 @@ public class MainActivity extends AppCompatActivity {
             return (int) (value - 179);
         }
         return (int) value;
-    }
-
-
-    private int convertFrom1To255Range(float input) {
-        return (int) (input * 255);
     }
 }

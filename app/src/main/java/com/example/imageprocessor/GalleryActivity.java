@@ -1,4 +1,4 @@
-package com.example.rt_image_processing;
+package com.example.imageprocessor;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
@@ -10,16 +10,14 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
-import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.rt_image_processing.model.Video;
-import com.example.rt_image_processing.util.GridLayoutManagerWrapper;
+import com.example.imageprocessor.model.Video;
+import com.example.imageprocessor.util.GridLayoutManagerWrapper;
 import com.google.android.material.appbar.MaterialToolbar;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Objects;
 
 
 public class GalleryActivity extends AppCompatActivity {
@@ -33,7 +31,7 @@ public class GalleryActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_gallery);
         initializeViews();
-        checkPermissions();
+        registerRequestPermissionLauncher();
     }
 
     @Override
@@ -61,20 +59,28 @@ public class GalleryActivity extends AppCompatActivity {
         new Thread(() -> {
             String mediaPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES).getPath();
             File mediaDir = new File(mediaPath);
-            for (File file : Objects.requireNonNull(mediaDir.listFiles())) {
-                Uri videoUri = Uri.fromFile(file);
-                videosList.add(new Video(videoUri));
-                runOnUiThread(() -> adapterVideoList.notifyItemInserted(videosList.size() - 1));
+            File[] files = mediaDir.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                    if (file.getPath().endsWith(".mp4")) {
+                        Uri videoUri = Uri.fromFile(file);
+                        videosList.add(new Video(videoUri));
+                        runOnUiThread(() -> adapterVideoList.notifyItemInserted(videosList.size() - 1));
+                    }
+                }
             }
         }).start();
     }
 
-    private void checkPermissions() {
+    private void registerRequestPermissionLauncher() {
         if (requestPermissionLauncher == null) {
             requestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
                 return;
             });
         }
+    }
+
+    private void checkPermissions() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             requestPermissionLauncher.launch(
                     Manifest.permission.WRITE_EXTERNAL_STORAGE);

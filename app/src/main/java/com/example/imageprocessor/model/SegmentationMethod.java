@@ -1,8 +1,8 @@
-package com.example.rt_image_processing.model;
+package com.example.imageprocessor.model;
 
 import lombok.Getter;
 
-public enum SegmentationMethod {
+public enum SegmentationMethod implements ProcessingMethod {
     THRESHOLDING(0), EDGE_DETECTION(1);
 
     @Getter

@@ -3,7 +3,7 @@
     <color name="colorPrimary">#1F3168</color>
     <color name="colorSecondary">#085732</color>
     <color name="colorAccent">#006C2B</color>
-    <color name="background">#D5D5D5</color>
+    <color name="background">#FFFFFF</color>
 <!--    $mdc-theme-primary: #085732;-->
 <!--    $mdc-theme-secondary: #081B57;-->
 

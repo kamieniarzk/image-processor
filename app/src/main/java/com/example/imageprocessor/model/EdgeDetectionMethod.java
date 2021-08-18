@@ -1,8 +1,8 @@
-package com.example.rt_image_processing.model;
+package com.example.imageprocessor.model;
 
 import lombok.Getter;
 
-public enum EdgeDetectionMethod {
+public enum EdgeDetectionMethod implements ProcessingMethod {
     Sobel(0), Canny(1);
 
     @Getter

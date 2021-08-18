@@ -48,4 +48,11 @@
     <string name="minimal_contour_area">Minimal contour area</string>
     <string name="contour_line_preview">Contour line preview</string>
     <string name="color_preview">Color preview</string>
+    <string name="configuration_details">Configuration details</string>
+    <string name="segmentation_method">Segmentation method:</string>
+    <string name="filtering_method">Filtering method:</string>
+    <string name="extraction_method">Extraction method:</string>
+    <string name="recording_details">Recording details</string>
+    <string name="threshold_1">Threshold 1</string>
+    <string name="threshold_2">Threshold 2</string>
 </resources>

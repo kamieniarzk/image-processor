@@ -47,24 +47,11 @@
                 android:layout_height="match_parent"
                 android:text="@string/canny"/>
         </RadioGroup>
+        <include
+            layout="@layout/canny_slider_layout"
+            android:id="@+id/cannyLayout"
+            android:visibility="gone"/>
     </LinearLayout>
-    <LinearLayout
-        android:id="@+id/sobelLayout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:animateLayoutChanges="true"
-        android:layout_margin="4dp">
 
-    </LinearLayout>
-    <LinearLayout
-        android:id="@+id/cannyLayout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:animateLayoutChanges="true"
-        android:layout_margin="4dp">
-
-    </LinearLayout>
 
 </com.google.android.material.card.MaterialCardView>

@@ -1,4 +1,4 @@
-package com.example.rt_image_processing;
+package com.example.imageprocessor;
 
 import android.app.ActivityOptions;
 import android.content.Intent;
@@ -7,28 +7,13 @@ import android.widget.LinearLayout;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.android.material.appbar.MaterialToolbar;
-
 public class HomeActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
-        initializeTopBar();
         initializeButtons();
-    }
-
-    private void initializeTopBar() {
-//        MaterialToolbar topBar = findViewById(R.id.homeTopBar);
-//        topBar.setOnMenuItemClickListener(item -> {
-//            if (item.getItemId() == R.id.config) {
-//                startConfigActivity();
-//            } else {
-//                startGalleryActivity();
-//            }
-//            return true;
-//        });
     }
 
     private void initializeButtons() {

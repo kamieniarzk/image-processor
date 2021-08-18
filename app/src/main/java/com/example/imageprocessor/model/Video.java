@@ -1,4 +1,4 @@
-package com.example.rt_image_processing.model;
+package com.example.imageprocessor.model;
 
 import android.net.Uri;
 

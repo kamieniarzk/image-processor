@@ -1,4 +1,4 @@
-package com.example.rt_image_processing.util;
+package com.example.imageprocessor.util;
 
 import android.content.Context;
 
