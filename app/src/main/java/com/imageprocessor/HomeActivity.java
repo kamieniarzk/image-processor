@@ -1,4 +1,4 @@
-package com.example.imageprocessor;
+package com.imageprocessor;
 
 import android.app.ActivityOptions;
 import android.content.Intent;

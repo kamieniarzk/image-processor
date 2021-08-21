@@ -1,12 +1,12 @@
-package com.example.imageprocessor.processor;
+package com.imageprocessor.processor;
 
 import android.annotation.SuppressLint;
 import android.os.SystemClock;
 import android.util.Log;
 
-import com.example.imageprocessor.model.ColorSpace;
-import com.example.imageprocessor.model.MarkingMethod;
-import com.example.imageprocessor.model.SegmentationMethod;
+import com.imageprocessor.model.ColorSpace;
+import com.imageprocessor.model.MarkingMethod;
+import com.imageprocessor.model.SegmentationMethod;
 
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.core.Core;

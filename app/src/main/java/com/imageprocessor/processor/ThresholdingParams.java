@@ -1,4 +1,4 @@
-package com.example.imageprocessor.processor;
+package com.imageprocessor.processor;
 
 import android.os.Parcel;
 import android.os.Parcelable;

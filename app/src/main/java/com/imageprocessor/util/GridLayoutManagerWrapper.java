@@ -1,4 +1,4 @@
-package com.example.imageprocessor.util;
+package com.imageprocessor.util;
 
 import android.content.Context;
 

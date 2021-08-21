@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="com.example.imageprocessor">
+    package="com.imageprocessor">
 
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
@@ -33,7 +33,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name="com.example.imageprocessor.VideoActivity"
+            android:name="com.imageprocessor.VideoActivity"
             android:exported="true" />
 
         <provider
@@ -46,22 +46,21 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
-        <activity android:name="com.example.imageprocessor.HomeActivity">
+        <activity android:name="com.imageprocessor.HomeActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.example.imageprocessor.PlayerActivity" />
+        <activity android:name="com.imageprocessor.PlayerActivity" />
         <activity
-            android:name="com.example.imageprocessor.GalleryActivity"
+            android:name="com.imageprocessor.GalleryActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name="com.example.imageprocessor.CameraActivity"
+            android:name="com.imageprocessor.CameraActivity"
             android:screenOrientation="landscape" />
         <activity
-            android:name="com.example.imageprocessor.MainActivity"
+            android:name="com.imageprocessor.MainActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme">
             <intent-filter>

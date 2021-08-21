@@ -1,4 +1,4 @@
-package com.example.imageprocessor;
+package com.imageprocessor;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
@@ -12,8 +12,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.imageprocessor.model.Video;
-import com.example.imageprocessor.util.GridLayoutManagerWrapper;
+import com.imageprocessor.model.Video;
+import com.imageprocessor.util.GridLayoutManagerWrapper;
 import com.google.android.material.appbar.MaterialToolbar;
 
 import java.io.File;

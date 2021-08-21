@@ -51,6 +51,10 @@
             layout="@layout/canny_slider_layout"
             android:id="@+id/cannyLayout"
             android:visibility="gone"/>
+        <include
+            layout="@layout/sobel_layout"
+            android:id="@+id/sobelLayout"
+            android:visibility="gone"/>
     </LinearLayout>
 
 

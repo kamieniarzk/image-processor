@@ -1,15 +1,14 @@
-package com.example.imageprocessor.processor;
+package com.imageprocessor.processor;
 
 import android.os.Parcel;
 import android.os.Parcelable;
 
 
-import com.example.imageprocessor.model.FilteringMethod;
+import com.imageprocessor.model.FilteringMethod;
 
 import org.opencv.core.Size;
 
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
 

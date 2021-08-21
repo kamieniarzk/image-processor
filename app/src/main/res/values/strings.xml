@@ -55,4 +55,8 @@
     <string name="recording_details">Recording details</string>
     <string name="threshold_1">Threshold 1</string>
     <string name="threshold_2">Threshold 2</string>
+    <string name="both_edge_dir">Both</string>
+    <string name="vertical_edge_dir">Vertical</string>
+    <string name="horizontal_edge_dir">Horizontal</string>
+    <string name="edge_dir_hint">Specify the direction of edges to detect</string>
 </resources>

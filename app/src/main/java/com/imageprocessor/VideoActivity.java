@@ -1,4 +1,4 @@
-package com.example.imageprocessor;
+package com.imageprocessor;
 
 import android.content.Intent;
 import android.net.Uri;
@@ -28,10 +28,10 @@ import com.anychart.enums.LegendLayout;
 import com.anychart.enums.Position;
 import com.anychart.enums.TooltipPositionMode;
 import com.bumptech.glide.Glide;
-import com.example.imageprocessor.model.MarkingMethod;
-import com.example.imageprocessor.model.FilteringMethod;
-import com.example.imageprocessor.model.SegmentationMethod;
-import com.example.imageprocessor.model.VideoMetadata;
+import com.imageprocessor.model.MarkingMethod;
+import com.imageprocessor.model.FilteringMethod;
+import com.imageprocessor.model.SegmentationMethod;
+import com.imageprocessor.model.VideoMetadata;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.android.material.appbar.MaterialToolbar;
 

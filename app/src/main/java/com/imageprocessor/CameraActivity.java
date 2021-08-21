@@ -1,4 +1,4 @@
-package com.example.imageprocessor;
+package com.imageprocessor;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -21,17 +21,17 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import com.example.imageprocessor.model.ColorSpace;
-import com.example.imageprocessor.model.EdgeDetectionMethod;
-import com.example.imageprocessor.model.FilteringMethod;
-import com.example.imageprocessor.model.MarkingMethod;
-import com.example.imageprocessor.model.SegmentationMethod;
-import com.example.imageprocessor.model.VideoMetadata;
-import com.example.imageprocessor.processor.EdgeDetectionParams;
-import com.example.imageprocessor.processor.FilteringParams;
-import com.example.imageprocessor.processor.ImageProcessor;
-import com.example.imageprocessor.processor.MarkingParams;
-import com.example.imageprocessor.processor.ThresholdingParams;
+import com.imageprocessor.model.ColorSpace;
+import com.imageprocessor.model.EdgeDetectionMethod;
+import com.imageprocessor.model.FilteringMethod;
+import com.imageprocessor.model.MarkingMethod;
+import com.imageprocessor.model.SegmentationMethod;
+import com.imageprocessor.model.VideoMetadata;
+import com.imageprocessor.processor.EdgeDetectionParams;
+import com.imageprocessor.processor.FilteringParams;
+import com.imageprocessor.processor.ImageProcessor;
+import com.imageprocessor.processor.MarkingParams;
+import com.imageprocessor.processor.ThresholdingParams;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.opencv.android.BaseLoaderCallback;

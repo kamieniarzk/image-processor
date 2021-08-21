@@ -1,4 +1,4 @@
-package com.example.imageprocessor;
+package com.imageprocessor;
 
 import android.content.Intent;
 import android.graphics.Color;
@@ -15,15 +15,15 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.imageprocessor.model.ColorSpace;
-import com.example.imageprocessor.model.EdgeDetectionMethod;
-import com.example.imageprocessor.model.FilteringMethod;
-import com.example.imageprocessor.model.MarkingMethod;
-import com.example.imageprocessor.model.SegmentationMethod;
-import com.example.imageprocessor.processor.EdgeDetectionParams;
-import com.example.imageprocessor.processor.FilteringParams;
-import com.example.imageprocessor.processor.MarkingParams;
-import com.example.imageprocessor.processor.ThresholdingParams;
+import com.imageprocessor.model.ColorSpace;
+import com.imageprocessor.model.EdgeDetectionMethod;
+import com.imageprocessor.model.FilteringMethod;
+import com.imageprocessor.model.MarkingMethod;
+import com.imageprocessor.model.SegmentationMethod;
+import com.imageprocessor.processor.EdgeDetectionParams;
+import com.imageprocessor.processor.FilteringParams;
+import com.imageprocessor.processor.MarkingParams;
+import com.imageprocessor.processor.ThresholdingParams;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.slider.Slider;
@@ -41,6 +41,9 @@ public class MainActivity extends AppCompatActivity {
     private LinearLayout mGraySlidersLayout;
     private LinearLayout mColorSubsitutionLayout;
     private LinearLayout mDrawContoursLayout;
+    private LinearLayout mSobelLayout;
+    private LinearLayout mCannyLayout;
+
     private MaterialCardView mThresholdingCardview;
     private MaterialCardView mEdgeDetectionCardView;
     private MaterialToolbar mToolbar;
@@ -73,6 +76,7 @@ public class MainActivity extends AppCompatActivity {
     private int mContourThickness;
     private double mCannyT1;
     private double mCannyT2;
+    private int sobelDirection;
 
 
     @Override
@@ -127,16 +131,40 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initializeEdgeDetectionLayout() {
+        mCannyLayout = findViewById(R.id.cannyLayout);
+        mSobelLayout = findViewById(R.id.sobelLayout);
         RadioButton sobelButton = findViewById(R.id.sobelButton);
         sobelButton.setOnCheckedChangeListener((compoundButton, b) -> toggleEdgeDetectionMethod());
         toggleEdgeDetectionMethod();
+        RadioButton horizontal = findViewById(R.id.horizontalEdgeDirButton);
+        horizontal.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                sobelDirection = 0;
+            }
+        });
+        RadioButton vertical = findViewById(R.id.verticalEdgeDirButton);
+        vertical.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                sobelDirection = 1;
+            }
+        });
+        RadioButton both = findViewById(R.id.bothEdgeDirButton);
+        both.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                sobelDirection = 2;
+            }
+        });
     }
 
     private void toggleEdgeDetectionMethod() {
         if (mEdgeDetectionMethod == EdgeDetectionMethod.Canny || mEdgeDetectionMethod == null) {
             mEdgeDetectionMethod = EdgeDetectionMethod.Sobel;
+            mCannyLayout.setVisibility(View.GONE);
+            mSobelLayout.setVisibility(View.VISIBLE);
         } else {
             mEdgeDetectionMethod = EdgeDetectionMethod.Canny;
+            mCannyLayout.setVisibility(View.VISIBLE);
+            mSobelLayout.setVisibility(View.GONE);
         }
     }
 

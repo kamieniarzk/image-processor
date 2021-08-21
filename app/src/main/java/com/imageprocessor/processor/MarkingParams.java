@@ -1,9 +1,9 @@
-package com.example.imageprocessor.processor;
+package com.imageprocessor.processor;
 
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import com.example.imageprocessor.model.MarkingMethod;
+import com.imageprocessor.model.MarkingMethod;
 
 import org.opencv.core.Scalar;
 

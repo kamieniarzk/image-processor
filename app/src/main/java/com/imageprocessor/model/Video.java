@@ -1,4 +1,4 @@
-package com.example.imageprocessor.model;
+package com.imageprocessor.model;
 
 import android.net.Uri;
 

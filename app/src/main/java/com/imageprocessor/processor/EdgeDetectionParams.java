@@ -1,9 +1,9 @@
-package com.example.imageprocessor.processor;
+package com.imageprocessor.processor;
 
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import com.example.imageprocessor.model.EdgeDetectionMethod;
+import com.imageprocessor.model.EdgeDetectionMethod;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
