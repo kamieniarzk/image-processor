@@ -14,8 +14,8 @@
             android:id="@+id/mainTopBar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:navigationIcon="@drawable/ic_baseline_info_24"
-            app:title="@string/welcome_text"
+            app:navigationIcon="@drawable/ic_baseline_arrow_back_24"
+            app:title="@string/algorithm_config"
             app:collapsedTitleGravity ="bottom|center_horizontal"
             app:menu="@menu/main_top_bar_menu"
             style="@style/Widget.MaterialComponents.Toolbar.Primary"
@@ -47,14 +47,14 @@
             <include layout="@layout/segmentation_cardview"/>
             <include layout="@layout/edge_detection_cardview"/>
             <include layout="@layout/thresholding_cardview"/>
-            <include layout="@layout/extraction_cardview"/>
+            <include layout="@layout/marking_cardview"/>
 
 
             <Button
                 android:id="@+id/cameraButton"
-                android:layout_width="wrap_content"
+                android:layout_width="200dp"
                 android:layout_height="wrap_content"
-                android:layout_marginVertical="15dp"
+                android:layout_marginVertical="25dp"
                 android:layout_gravity="center"
                 android:backgroundTintMode="src_in"
                 android:paddingLeft="10dp"

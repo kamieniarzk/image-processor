@@ -1,0 +1,16 @@
+<com.google.android.material.textfield.TextInputLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    style="@style/OutlinedBox"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:hint="@string/edge_direction">
+
+    <AutoCompleteTextView
+        android:id="@+id/sobelDirectionSpinner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="none"
+        />
+
+</com.google.android.material.textfield.TextInputLayout>

@@ -4,6 +4,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import com.imageprocessor.model.EdgeDetectionMethod;
+import com.imageprocessor.model.SobelDirection;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -18,11 +19,14 @@ public class EdgeDetectionParams implements Parcelable {
     EdgeDetectionMethod method;
     double threshold1;
     double threshold2;
+    SobelDirection sobelDirection;
+
 
     protected EdgeDetectionParams(Parcel in) {
         method = EdgeDetectionMethod.of(in.readInt());
         threshold1 = in.readDouble();
         threshold2 = in.readDouble();
+        sobelDirection = SobelDirection.of(in.readInt());
     }
 
     public static final Creator<EdgeDetectionParams> CREATOR = new Creator<EdgeDetectionParams>() {
@@ -47,5 +51,6 @@ public class EdgeDetectionParams implements Parcelable {
         dest.writeInt(method.getValue());
         dest.writeDouble(threshold1);
         dest.writeDouble(threshold2);
+        dest.writeInt(sobelDirection.getValue());
     }
 }

@@ -8,6 +8,7 @@
         <entry key="app/src/main/res/layout/activity_gallery.xml" value="0.1094224924012158" />
         <entry key="app/src/main/res/layout/activity_home.xml" value="0.2552083333333333" />
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.23233695652173914" />
+        <entry key="app/src/main/res/layout/activity_player.xml" value="0.1" />
         <entry key="app/src/main/res/layout/activity_video.xml" value="0.21784420289855072" />
         <entry key="app/src/main/res/layout/canny_slider_layout.xml" value="0.2368659420289855" />
         <entry key="app/src/main/res/layout/color_space_cardview.xml" value="0.21784420289855072" />
@@ -16,9 +17,15 @@
         <entry key="app/src/main/res/layout/filter_cardview.xml" value="0.21784420289855072" />
         <entry key="app/src/main/res/layout/filter_mode_spinner.xml" value="0.21784420289855072" />
         <entry key="app/src/main/res/layout/gallery_row.xml" value="0.21784420289855072" />
+        <entry key="app/src/main/res/layout/gray_slider_layout.xml" value="0.1" />
         <entry key="app/src/main/res/layout/hue_slider_layout.xml" value="0.2368659420289855" />
+        <entry key="app/src/main/res/layout/kernel_size_spinner.xml" value="0.1" />
+        <entry key="app/src/main/res/layout/marking_cardview.xml" value="0.1" />
+        <entry key="app/src/main/res/layout/saturation_slider_layout.xml" value="0.1" />
         <entry key="app/src/main/res/layout/segmentation_cardview.xml" value="0.21784420289855072" />
-        <entry key="app/src/main/res/layout/sobel_layout.xml" value="0.28530259365994237" />
+        <entry key="app/src/main/res/layout/sobel_direction_spinner.xml" value="0.1" />
+        <entry key="app/src/main/res/layout/sobel_layout.xml" value="0.165" />
+        <entry key="app/src/main/res/layout/substitute_color_layout.xml" value="0.1" />
         <entry key="app/src/main/res/layout/thresholding_cardview.xml" value="0.2552083333333333" />
         <entry key="app/src/main/res/layout/value_slider_layout.xml" value="0.2368659420289855" />
         <entry key="app/src/main/res/layout/video_cardview.xml" value="0.1" />

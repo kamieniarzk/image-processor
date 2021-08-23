@@ -58,6 +58,9 @@ public class CameraActivity extends AppCompatActivity
     private JavaCameraView mOpenCvCameraView;
 
     private Mat mCurrentFrame;
+    private Mat mFilteredFrame;
+    private Mat mBinaryMask;
+
     private MediaRecorder mMediaRecorder;
     private boolean mRecording;
 
@@ -146,9 +149,9 @@ public class CameraActivity extends AppCompatActivity
         ObjectMapper mapper = new ObjectMapper();
         String mediaPath;
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
-            mediaPath = getExternalFilesDir(Environment.DIRECTORY_MOVIES).getPath();
+            mediaPath = getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS).getPath();
         } else {
-            mediaPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES).getPath();
+            mediaPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).getPath();
         }
 
         String jsonFilePath = mediaPath + File.separator + mCurrentFileName + ".json";
@@ -193,18 +196,13 @@ public class CameraActivity extends AppCompatActivity
 
     @Override
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
-        System.gc();
         if (mCurrentFrame != null) {
             mCurrentFrame.release();
         }
-
         mCurrentFrame = mImageProcessor.getMatFromInputFrame(inputFrame);
-
-        mCurrentFrame = mImageProcessor.filterStep(mCurrentFrame);
-        mCurrentFrame = mImageProcessor.segmentationStep(mCurrentFrame);
-        mCurrentFrame = mImageProcessor.extractionStep(mCurrentFrame);
-
-        return mCurrentFrame;
+        mFilteredFrame = mImageProcessor.filterStep(mCurrentFrame);
+        mBinaryMask = mImageProcessor.segmentationStep(mFilteredFrame);
+        return mImageProcessor.markingStep(mCurrentFrame, mBinaryMask);
     }
 
     private void checkPermissions() {

@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">Image processor</string>
-    <string name="welcome_text">Algorithm configuration</string>
+    <string name="algorithm_config">Algorithm configuration</string>
     <string name="camera_on_button">Start camera</string>
     <string name="flip_camera_button">Flip camera</string>
     <string name="threshold1">Threshold 1</string>
@@ -37,11 +37,15 @@
     <string name="filter_mode">Filter mode</string>
     <string name="kernel_size">Kernel size</string>
     <string name="lorem">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc velit massa, commodo at libero eget, sollicitudin tincidunt nunc. Aliquam vel elementum libero. Nulla ullamcorper fermentum justo, nec tempor diam iaculis nec. Aenean tincidunt lobortis mauris. Integer at felis eu nisi facilisis dictum sit amet ac lectus. Donec dapibus quis magna non lacinia. In hac habitasse platea dictumst. Aenean lacinia sodales dui, eu auctor urna dapibus nec. Duis auctor aliquam rhoncus.</string>
+    <string name="welcome_text">Image processor application is a result of a Bachelor\'s thesis. The main capability of the application is processing of image frames from the device\'s camera using a user-defined processing sequence. The processing happens in real-time and the result image stream can be saved in the media gallery.</string>
     <string name="color_space">Color space</string>
     <string name="seg_label">Segmentation</string>
     <string name="smoothing_label">Smoothing</string>
-    <string name="marking">In this step of processing ...</string>
+    <string name="marking">In this stage of processing, the features extracted in the segmentation step are marked on the image.</string>
+    <string name="substitute_colors_desc">The color of the extracted features is substituted to a chosen value</string>
+    <string name="draw_contours_and_label_desc">Blobs that have area greater than the specified min value have a contour drawn around them and a label with the % of the whole image area they take up.</string>
     <string name="marking_label">Marking</string>
+    <string name="edge_detection_desc">This segmentation method yields a binary mask by applying a selected edge detection algorithm on the image.</string>
     <string name="substitute_color">Substitute color</string>
     <string name="draw_contours">Draw contours and label</string>
     <string name="contour_thickness">Contour thickness</string>
@@ -59,4 +63,5 @@
     <string name="vertical_edge_dir">Vertical</string>
     <string name="horizontal_edge_dir">Horizontal</string>
     <string name="edge_dir_hint">Specify the direction of edges to detect</string>
+    <string name="edge_direction">Edge direction</string>
 </resources>

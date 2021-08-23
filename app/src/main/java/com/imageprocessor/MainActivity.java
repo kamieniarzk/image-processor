@@ -10,6 +10,7 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -20,6 +21,7 @@ import com.imageprocessor.model.EdgeDetectionMethod;
 import com.imageprocessor.model.FilteringMethod;
 import com.imageprocessor.model.MarkingMethod;
 import com.imageprocessor.model.SegmentationMethod;
+import com.imageprocessor.model.SobelDirection;
 import com.imageprocessor.processor.EdgeDetectionParams;
 import com.imageprocessor.processor.FilteringParams;
 import com.imageprocessor.processor.MarkingParams;
@@ -43,13 +45,14 @@ public class MainActivity extends AppCompatActivity {
     private LinearLayout mDrawContoursLayout;
     private LinearLayout mSobelLayout;
     private LinearLayout mCannyLayout;
-
+    private RadioGroup mMarkingMethodSelector;
     private MaterialCardView mThresholdingCardview;
     private MaterialCardView mEdgeDetectionCardView;
     private MaterialToolbar mToolbar;
     private GradientDrawable mThresholdGradient;
     private View mBackgroundColorPreview;
     private View mContourPreview;
+    private TextView mMarkingMethodDescriptionTextView;
 
     // config
     private int mKernelSize;
@@ -76,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
     private int mContourThickness;
     private double mCannyT1;
     private double mCannyT2;
-    private int sobelDirection;
+    private SobelDirection mSobelDirection;
 
 
     @Override
@@ -94,11 +97,35 @@ public class MainActivity extends AppCompatActivity {
         initializeHsvSliders();
         initializeGraySliders();
         initializeColorButton();
+        initializeMarkingLayout();
         initializeSegmentationLayout();
         initializeEdgeDetectionLayout();
         initializeColorSubstitutionConfigLayout();
-        initializeMarkingLayout();
         initializeCannySliders();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (mColorSpace == null) {
+            mColorSpace = ColorSpace.COLOR;
+        }
+
+        if (mSegmentationMethod == null) {
+            mSegmentationMethod = SegmentationMethod.THRESHOLDING;
+        }
+
+        if (mEdgeDetectionMethod == null) {
+            mEdgeDetectionMethod = EdgeDetectionMethod.Canny;
+        }
+
+        if (mFilteringMethod == null) {
+            mFilteringMethod = FilteringMethod.None;
+        }
+
+        if (mMarkingMethod == null) {
+            mMarkingMethod = MarkingMethod.BACKGROUND_CHANGE;
+        }
     }
 
     private void initializeCannySliders() {
@@ -110,50 +137,44 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initializeMarkingLayout() {
+        mMarkingMethodDescriptionTextView = findViewById(R.id.markingMethodDescription);
+        mMarkingMethodSelector = findViewById(R.id.markingMethodSelector);
         mColorSubsitutionLayout = findViewById(R.id.substitute_color_layout);
         mDrawContoursLayout = findViewById(R.id.draw_contours_layout);
         RadioButton backgroundChangeButton = findViewById(R.id.drawContoursButton);
-        backgroundChangeButton.setOnCheckedChangeListener((comoundButton, b) -> toggleExtractionMethod());
-        toggleExtractionMethod();
+        backgroundChangeButton.setOnCheckedChangeListener((comoundButton, b) -> toggleMarkingMethod());
+        toggleMarkingMethod();
         initializeContourDrawingConfig();
     }
 
-    private void toggleExtractionMethod() {
+    private void toggleMarkingMethod() {
         if (mMarkingMethod == MarkingMethod.DRAW_CONTOURS || mMarkingMethod == null) {
             mMarkingMethod = MarkingMethod.BACKGROUND_CHANGE;
             mColorSubsitutionLayout.setVisibility(View.VISIBLE);
             mDrawContoursLayout.setVisibility(View.GONE);
+            mMarkingMethodDescriptionTextView.setText(R.string.substitute_colors_desc);
         } else {
             mMarkingMethod = MarkingMethod.DRAW_CONTOURS;
             mColorSubsitutionLayout.setVisibility(View.GONE);
             mDrawContoursLayout.setVisibility(View.VISIBLE);
+            mMarkingMethodDescriptionTextView.setText(R.string.draw_contours_and_label_desc);
         }
     }
 
     private void initializeEdgeDetectionLayout() {
         mCannyLayout = findViewById(R.id.cannyLayout);
         mSobelLayout = findViewById(R.id.sobelLayout);
+        mSobelDirection = SobelDirection.X;
         RadioButton sobelButton = findViewById(R.id.sobelButton);
         sobelButton.setOnCheckedChangeListener((compoundButton, b) -> toggleEdgeDetectionMethod());
         toggleEdgeDetectionMethod();
-        RadioButton horizontal = findViewById(R.id.horizontalEdgeDirButton);
-        horizontal.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            if (isChecked) {
-                sobelDirection = 0;
-            }
-        });
-        RadioButton vertical = findViewById(R.id.verticalEdgeDirButton);
-        vertical.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            if (isChecked) {
-                sobelDirection = 1;
-            }
-        });
-        RadioButton both = findViewById(R.id.bothEdgeDirButton);
-        both.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            if (isChecked) {
-                sobelDirection = 2;
-            }
-        });
+
+        AutoCompleteTextView sobelDirectionSpinner = findViewById(R.id.sobelDirectionSpinner);
+        final SobelDirection[] sobelDirections = SobelDirection.values();
+        ArrayAdapter<SobelDirection> directionAdapter = new ArrayAdapter<>(this, R.layout.list_item, sobelDirections);
+        sobelDirectionSpinner.setAdapter(directionAdapter);
+        sobelDirectionSpinner.setOnItemClickListener((adapterView, view, i, l) -> mSobelDirection = sobelDirections[i]);
+        mSobelDirection = SobelDirection.X;
     }
 
     private void toggleEdgeDetectionMethod() {
@@ -178,10 +199,14 @@ public class MainActivity extends AppCompatActivity {
 
     private void toggleSegmentationMethod() {
         if (mSegmentationMethod == SegmentationMethod.EDGE_DETECTION || mSegmentationMethod == null) {
+            mMarkingMethodSelector.setVisibility(View.VISIBLE);
             mSegmentationMethod = SegmentationMethod.THRESHOLDING;
             mEdgeDetectionCardView.setVisibility(View.GONE);
             mThresholdingCardview.setVisibility(View.VISIBLE);
         } else {
+            mMarkingMethodSelector.setVisibility(View.GONE);
+            mMarkingMethod = MarkingMethod.DRAW_CONTOURS;
+            toggleMarkingMethod();
             mSegmentationMethod = SegmentationMethod.EDGE_DETECTION;
             mEdgeDetectionCardView.setVisibility(View.VISIBLE);
             mThresholdingCardview.setVisibility(View.GONE);
@@ -260,7 +285,8 @@ public class MainActivity extends AppCompatActivity {
         EdgeDetectionParams edgeDetectionParams = new EdgeDetectionParams(
                 mEdgeDetectionMethod,
                 mCannyT1,
-                mCannyT2
+                mCannyT2,
+                mSobelDirection
         );
 
         Intent intent = new Intent(getApplicationContext(), CameraActivity.class);

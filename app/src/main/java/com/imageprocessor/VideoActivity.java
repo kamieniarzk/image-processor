@@ -21,6 +21,7 @@ import com.anychart.chart.common.listener.ListenersInterface;
 import com.anychart.charts.Cartesian;
 import com.anychart.charts.Pie;
 import com.anychart.core.cartesian.series.Column;
+import com.anychart.core.ui.ChartCredits;
 import com.anychart.enums.Align;
 import com.anychart.enums.Anchor;
 import com.anychart.enums.HoverMode;
@@ -83,9 +84,9 @@ public class VideoActivity extends AppCompatActivity {
         String lastPathSegment = mVideoUri.getLastPathSegment();
         String mediaPath;
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
-            mediaPath = getExternalFilesDir(Environment.DIRECTORY_MOVIES).getPath();
+            mediaPath = getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS).getPath();
         } else {
-            mediaPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES).getPath();
+            mediaPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).getPath();
         }
         String fileName = lastPathSegment.substring(0, lastPathSegment.length() - 4);
         String jsonFilePath = mediaPath + File.separator + fileName + ".json";
@@ -102,6 +103,7 @@ public class VideoActivity extends AppCompatActivity {
         AnyChartView anyChartView = findViewById(R.id.any_chart_view);
 ////        anyChartView.setProgressBar(findViewById(R.id.progress_bar));
         APIlib.getInstance().setActiveAnyChartView(anyChartView);
+//        ChartCredits.instantiate().enabled(false);
 
         Cartesian cartesian = AnyChart.column();
 
