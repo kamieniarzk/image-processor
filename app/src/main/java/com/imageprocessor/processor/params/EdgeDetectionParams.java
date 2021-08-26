@@ -1,4 +1,4 @@
-package com.imageprocessor.processor;
+package com.imageprocessor.processor.params;
 
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -6,14 +6,13 @@ import android.os.Parcelable;
 import com.imageprocessor.model.EdgeDetectionMethod;
 import com.imageprocessor.model.SobelDirection;
 
-import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.experimental.FieldDefaults;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@Getter
+@Data
 @AllArgsConstructor
-@FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+@NoArgsConstructor
 public class EdgeDetectionParams implements Parcelable {
 
     EdgeDetectionMethod method;

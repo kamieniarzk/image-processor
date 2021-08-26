@@ -1,15 +1,14 @@
-package com.imageprocessor.processor;
+package com.imageprocessor.processor.params;
 
 import android.os.Parcel;
 import android.os.Parcelable;
 
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.experimental.FieldDefaults;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@Getter
-@FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+@Data
+@NoArgsConstructor
 public class ThresholdingParams implements Parcelable {
 
     int hueLow;

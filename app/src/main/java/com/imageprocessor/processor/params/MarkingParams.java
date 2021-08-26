@@ -1,19 +1,19 @@
-package com.imageprocessor.processor;
+package com.imageprocessor.processor.params;
 
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.imageprocessor.model.MarkingMethod;
 
 import org.opencv.core.Scalar;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.experimental.FieldDefaults;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 
-@Getter
-@FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+@Data
+@NoArgsConstructor
 public class MarkingParams implements Parcelable {
     MarkingMethod markingMethod;
     int backgroundRed;
@@ -22,9 +22,11 @@ public class MarkingParams implements Parcelable {
     int contourRed;
     int contourGreen;
     int contourBlue;
+    @JsonIgnore
     Scalar rgbBackgroundScalar;
     float contourMinArea;
     int contourThickness;
+    @JsonIgnore
     Scalar rgbContourScalar;
 
     public MarkingParams(MarkingMethod markingMethod, int backgroundRed, int backgroundGreen,

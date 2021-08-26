@@ -27,12 +27,13 @@ import com.imageprocessor.model.FilteringMethod;
 import com.imageprocessor.model.MarkingMethod;
 import com.imageprocessor.model.SegmentationMethod;
 import com.imageprocessor.model.VideoMetadata;
-import com.imageprocessor.processor.EdgeDetectionParams;
-import com.imageprocessor.processor.FilteringParams;
+import com.imageprocessor.processor.params.EdgeDetectionParams;
+import com.imageprocessor.processor.params.FilteringParams;
 import com.imageprocessor.processor.ImageProcessor;
-import com.imageprocessor.processor.MarkingParams;
-import com.imageprocessor.processor.ThresholdingParams;
+import com.imageprocessor.processor.params.MarkingParams;
+import com.imageprocessor.processor.params.ThresholdingParams;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.imageprocessor.processor.TimingMetrics;
 
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
@@ -72,6 +73,11 @@ public class CameraActivity extends AppCompatActivity
     private SegmentationMethod mSegmentationMethod;
     private EdgeDetectionMethod mEdgeDetectionMethod;
 
+    private EdgeDetectionParams mEdgeDetectionParams;
+    private FilteringParams mFilteringParams;
+    private ThresholdingParams mThresholdingParams;
+    private MarkingParams mMarkingParams;
+
     private String mCurrentFilePath;
     private String mCurrentFileName;
 
@@ -88,23 +94,25 @@ public class CameraActivity extends AppCompatActivity
 
     private void initializeMediaRecorder() {
         CamcorderProfile profile = CamcorderProfile.get(CamcorderProfile.QUALITY_HIGH);
-
         mMediaRecorder = new MediaRecorder();
         mMediaRecorder.setVideoSource(MediaRecorder.VideoSource.SURFACE);
         mMediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
         mMediaRecorder.setVideoEncoder(profile.videoCodec);
         mMediaRecorder.setVideoEncodingBitRate(profile.videoBitRate);
-
         @SuppressLint("SimpleDateFormat")
         String fileName = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
         mCurrentFileName = fileName;
         String fileFormat = ".mp4";
-        String mediaPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES).getPath();
-        mCurrentFilePath = mediaPath + File.separator + fileName + fileFormat;
+        String mediaPath;
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
+            mediaPath = getExternalFilesDir(Environment.DIRECTORY_MOVIES).getPath();
+        } else {
+            mediaPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES).getPath();
+        }
 
+        mCurrentFilePath = mediaPath + File.separator + fileName + fileFormat;
         mMediaRecorder.setOutputFile(mCurrentFilePath);
         mMediaRecorder.setVideoSize(mOpenCvCameraView.getmFrameWidth(), mOpenCvCameraView.getmFrameHeight());
-
         mMediaRecorder.setOnInfoListener(this);
         mMediaRecorder.setOnErrorListener(this);
         try {
@@ -137,13 +145,11 @@ public class CameraActivity extends AppCompatActivity
     private void saveJsonWithMetadata() {
         VideoMetadata metadata = VideoMetadata.builder()
                 .segmentationMethod(mSegmentationMethod)
-                .markingMethod(mMarkingMethod)
-                .edgeDetectionMethod(mEdgeDetectionMethod)
-                .filteringMethod(mFilteringMethod)
+                .markingParams(mMarkingParams)
+                .edgeDetectionParams(mEdgeDetectionParams)
+                .filteringParams(mFilteringParams)
                 .colorSpace(mColorSpace)
-                .extractionTime(mImageProcessor.getMExtractionTimeElapsed())
-                .filteringTime(mImageProcessor.getMFilteringTimeElapsed())
-                .segmentationTime(mImageProcessor.getMSegmentationTimeElapsed())
+                .timingMetrics(new TimingMetrics(mImageProcessor.getMFilteringTimeElapsed(), mImageProcessor.getMSegmentationTimeElapsed(), mImageProcessor.getMMarkingTimeElapsed()))
                 .build();
 
         ObjectMapper mapper = new ObjectMapper();
@@ -265,18 +271,15 @@ public class CameraActivity extends AppCompatActivity
         mRecordButton.setOnClickListener(view -> toggleRecording());
         Intent intent = getIntent();
         mSegmentationMethod = SegmentationMethod.of(intent.getIntExtra("segmentationMethod", 0));
-        EdgeDetectionParams edgeDetectionParams = (EdgeDetectionParams) intent.getParcelableExtra("edgeDetectionParams");
-        FilteringParams filteringParams = (FilteringParams) intent.getParcelableExtra("filteringParams");
-        MarkingParams markingParams = (MarkingParams) intent.getParcelableExtra("markingParams");
-        mMarkingMethod = markingParams.getMarkingMethod();
-        mFilteringMethod = filteringParams.getFilteringMethod();
-        mEdgeDetectionMethod = edgeDetectionParams.getMethod();
+        mEdgeDetectionParams = (EdgeDetectionParams) intent.getParcelableExtra("edgeDetectionParams");
+        mFilteringParams = (FilteringParams) intent.getParcelableExtra("filteringParams");
+        mMarkingParams = (MarkingParams) intent.getParcelableExtra("markingParams");
         mColorSpace = ColorSpace.of(intent.getIntExtra("colorSpace", -1));
         mImageProcessor = ImageProcessor.builder()
                 .thresholdingParams((ThresholdingParams) intent.getParcelableExtra("thresholdingParams"))
-                .edgeDetectionParams(edgeDetectionParams)
-                .filteringParams(filteringParams)
-                .markingParams(markingParams)
+                .edgeDetectionParams(mEdgeDetectionParams)
+                .filteringParams(mFilteringParams)
+                .markingParams(mMarkingParams)
                 .mColorSpace(mColorSpace)
                 .mSegmentationMethod(mSegmentationMethod)
                 .mContoursList(new ArrayList<>())

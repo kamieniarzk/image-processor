@@ -1,4 +1,4 @@
-package com.imageprocessor;
+package com.imageprocessor.util;
 
 import android.content.Context;
 import android.content.Intent;
@@ -11,6 +11,8 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.imageprocessor.R;
+import com.imageprocessor.VideoActivity;
 import com.imageprocessor.model.Video;
 
 import java.util.ArrayList;

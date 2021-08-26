@@ -3,6 +3,7 @@ package com.imageprocessor;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 
@@ -15,6 +16,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.imageprocessor.model.Video;
 import com.imageprocessor.util.GridLayoutManagerWrapper;
 import com.google.android.material.appbar.MaterialToolbar;
+import com.imageprocessor.util.VideoAdapter;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -57,7 +59,12 @@ public class GalleryActivity extends AppCompatActivity {
 
     public void initVideos() {
         new Thread(() -> {
-            String mediaPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES).getPath();
+            String mediaPath;
+            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
+                mediaPath = getExternalFilesDir(Environment.DIRECTORY_MOVIES).getPath();
+            } else {
+                mediaPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES).getPath();
+            }
             File mediaDir = new File(mediaPath);
             File[] files = mediaDir.listFiles();
             if (files != null) {

@@ -22,10 +22,10 @@ import com.imageprocessor.model.FilteringMethod;
 import com.imageprocessor.model.MarkingMethod;
 import com.imageprocessor.model.SegmentationMethod;
 import com.imageprocessor.model.SobelDirection;
-import com.imageprocessor.processor.EdgeDetectionParams;
-import com.imageprocessor.processor.FilteringParams;
-import com.imageprocessor.processor.MarkingParams;
-import com.imageprocessor.processor.ThresholdingParams;
+import com.imageprocessor.processor.params.EdgeDetectionParams;
+import com.imageprocessor.processor.params.FilteringParams;
+import com.imageprocessor.processor.params.MarkingParams;
+import com.imageprocessor.processor.params.ThresholdingParams;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.slider.Slider;
@@ -254,7 +254,9 @@ public class MainActivity extends AppCompatActivity {
         int contourGreen = Color.green(rgbContour);
         int contourBlue = Color.blue(rgbContour);
 
-        ThresholdingParams thresholdingParams = new ThresholdingParams(
+        ThresholdingParams thresholdingParams = mSegmentationMethod == SegmentationMethod.EDGE_DETECTION ?
+                null :
+                new ThresholdingParams(
                 mHue,
                 mHueRadius,
                 mSaturation,
@@ -282,7 +284,9 @@ public class MainActivity extends AppCompatActivity {
                 mContourThickness
         );
 
-        EdgeDetectionParams edgeDetectionParams = new EdgeDetectionParams(
+        EdgeDetectionParams edgeDetectionParams = mSegmentationMethod == SegmentationMethod.THRESHOLDING ?
+                null :
+                new EdgeDetectionParams(
                 mEdgeDetectionMethod,
                 mCannyT1,
                 mCannyT2,

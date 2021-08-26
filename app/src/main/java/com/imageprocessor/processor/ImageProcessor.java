@@ -1,16 +1,17 @@
 package com.imageprocessor.processor;
 
-import static org.opencv.core.CvType.CV_64F;
-
 import android.annotation.SuppressLint;
 import android.os.SystemClock;
 import android.util.Log;
 
 import com.imageprocessor.model.ColorSpace;
 import com.imageprocessor.model.EdgeDetectionMethod;
-import com.imageprocessor.model.FilteringMethod;
 import com.imageprocessor.model.MarkingMethod;
 import com.imageprocessor.model.SegmentationMethod;
+import com.imageprocessor.processor.params.EdgeDetectionParams;
+import com.imageprocessor.processor.params.FilteringParams;
+import com.imageprocessor.processor.params.MarkingParams;
+import com.imageprocessor.processor.params.ThresholdingParams;
 
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.core.Core;
@@ -71,7 +72,7 @@ public class ImageProcessor {
     @Getter
     private long mSegmentationTimeElapsed;
     @Getter
-    private long mExtractionTimeElapsed;
+    private long mMarkingTimeElapsed;
 
     public Mat getMatFromInputFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
         if (mColorSpace == ColorSpace.COLOR) {
@@ -85,7 +86,7 @@ public class ImageProcessor {
         long initialTime = SystemClock.currentThreadTimeMillis();
         switch (filteringParams.getFilteringMethod()) {
             case Averaging:
-                Imgproc.blur(input, mFinalFrame, filteringParams.getKernelSize());
+                Imgproc.blur(input, mFilteredFrame, filteringParams.getKernelSize());
                 break;
             case Gaussian:
                 Imgproc.GaussianBlur(input, mFilteredFrame, filteringParams.getKernelSize(), 0);
@@ -96,7 +97,6 @@ public class ImageProcessor {
             default:
                 return input;
         }
-        input.release();
         long totalTime = SystemClock.currentThreadTimeMillis() - initialTime;
         mFilteringTimeElapsed += totalTime;
         return mFilteredFrame;
@@ -124,7 +124,7 @@ public class ImageProcessor {
             output = substituteColour(source, binaryMask);
         }
         long total = SystemClock.currentThreadTimeMillis() - initial;
-        mExtractionTimeElapsed += total;
+        mMarkingTimeElapsed += total;
         return output;
     }
 
@@ -282,7 +282,7 @@ public class ImageProcessor {
 
     public void resetTimers() {
         mSegmentationTimeElapsed = 0;
-        mExtractionTimeElapsed = 0;
+        mMarkingTimeElapsed = 0;
         mFilteringTimeElapsed = 0;
     }
 }

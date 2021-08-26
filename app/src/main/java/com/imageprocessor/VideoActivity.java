@@ -108,19 +108,14 @@ public class VideoActivity extends AppCompatActivity {
         Cartesian cartesian = AnyChart.column();
 
         List<DataEntry> data = new ArrayList<>();
-        String segmentationLabel = mVideoMetadata.getSegmentationMethod() == SegmentationMethod.THRESHOLDING ?
-                "Thresholding" :
-                "Edge detection";
-        data.add(new ValueDataEntry(segmentationLabel, mVideoMetadata.getSegmentationTime()));
 
-        if (mVideoMetadata.getFilteringMethod() != FilteringMethod.None) {
-            data.add(new ValueDataEntry("Filtering", mVideoMetadata.getFilteringTime()));
+        data.add(new ValueDataEntry("Segmentation", mVideoMetadata.getTimingMetrics().getSegmentationTime()));
+
+        if (mVideoMetadata.getFilteringParams().getFilteringMethod() != FilteringMethod.None) {
+            data.add(new ValueDataEntry("Filtering", mVideoMetadata.getTimingMetrics().getFilteringTime()));
         }
 
-        String extractionLabel = mVideoMetadata.getMarkingMethod() == MarkingMethod.DRAW_CONTOURS ?
-                "Finding and drawing contours" :
-                "Substituting colour";
-        data.add(new ValueDataEntry(extractionLabel, mVideoMetadata.getExtractionTime()));
+        data.add(new ValueDataEntry("Marking", mVideoMetadata.getTimingMetrics().getMarkingTime()));
 
         Column column = cartesian.column(data);
         column.color("green");
@@ -197,9 +192,9 @@ public class VideoActivity extends AppCompatActivity {
         segmentationMethodValue.setText(mVideoMetadata.getSegmentationMethod().name());
 
         TextView extractionMethodValue = findViewById(R.id.extractionMethodValue);
-        extractionMethodValue.setText(mVideoMetadata.getMarkingMethod().name());
+        extractionMethodValue.setText(mVideoMetadata.getMarkingParams().getMarkingMethod().name());
 
         TextView filteringMethodValue = findViewById(R.id.filteringMethodValue);
-        filteringMethodValue.setText(mVideoMetadata.getFilteringMethod().name());
+        filteringMethodValue.setText(mVideoMetadata.getFilteringParams().getFilteringMethod().name());
     }
 }

@@ -1,4 +1,4 @@
-package com.imageprocessor.processor;
+package com.imageprocessor.processor.params;
 
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -8,12 +8,11 @@ import com.imageprocessor.model.FilteringMethod;
 
 import org.opencv.core.Size;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.experimental.FieldDefaults;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@Getter
-@FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+@Data
+@NoArgsConstructor
 public class FilteringParams implements Parcelable {
     FilteringMethod filteringMethod;
     Size kernelSize;
@@ -23,6 +22,7 @@ public class FilteringParams implements Parcelable {
         kernelSize = new Size(size, size);
         filteringMethod = FilteringMethod.of(in.readInt());
     }
+
 
     public static final Creator<FilteringParams> CREATOR = new Creator<FilteringParams>() {
         @Override
