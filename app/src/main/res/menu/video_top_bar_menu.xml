@@ -3,7 +3,7 @@
 
     <item
         android:id="@+id/favorite"
-        android:icon="@drawable/ic_baseline_perm_media_24"
+        android:icon="@drawable/ic_baseline_delete_outline_24"
         app:showAsAction="ifRoom"
-        android:title="Media gallery icon" />
+        android:title="Delete icon" />
 </menu>

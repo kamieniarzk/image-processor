@@ -167,8 +167,6 @@ public class ImageProcessor {
             Imgproc.cvtColor(input, mHsvFrame, Imgproc.COLOR_RGB2HSV);
             Core.inRange(mHsvFrame, mHsvScalarLow, mHsvScalarHi, mBinaryMask);
             mHsvFrame.release();
-            Log.i("Lower Hsv", mHsvScalarLow.toString());
-            Log.i("Hi Hsv", mHsvScalarHi.toString());
         } else {
             Imgproc.threshold(input, mBinaryMask, thresholdingParams.getGrayLow(),
                     thresholdingParams.getGrayHi(), Imgproc.THRESH_BINARY);
@@ -244,8 +242,12 @@ public class ImageProcessor {
     }
 
     public void initializeOpenCvObjects() {
-        mHsvScalarLow = new Scalar(thresholdingParams.getHueLow(), thresholdingParams.getSaturationLow(), thresholdingParams.getValueLow());
-        mHsvScalarHi = new Scalar(thresholdingParams.getHueHi(), thresholdingParams.getSaturationHi(), thresholdingParams.getValueHi());
+        mHsvScalarLow = mSegmentationMethod == SegmentationMethod.EDGE_DETECTION ?
+                null :
+                new Scalar(thresholdingParams.getHueLow(), thresholdingParams.getSaturationLow(), thresholdingParams.getValueLow());
+        mHsvScalarHi = mSegmentationMethod == SegmentationMethod.EDGE_DETECTION ?
+                null :
+                new Scalar(thresholdingParams.getHueHi(), thresholdingParams.getSaturationHi(), thresholdingParams.getValueHi());
         mBinaryMask = new Mat();
         mHierarchy = new Mat();
         mDownScaledFrame = new Mat();

@@ -40,6 +40,7 @@ import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.JavaCameraView;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
+import org.opencv.core.Core;
 import org.opencv.core.Mat;
 
 import java.io.File;
@@ -249,6 +250,7 @@ public class CameraActivity extends AppCompatActivity
             public void onManagerConnected(int status) {
                 if (status == LoaderCallbackInterface.SUCCESS) {
                     Log.i(TAG, "OpenCV loaded successfully");
+                    mImageProcessor.initializeOpenCvObjects();
                     mOpenCvCameraView.enableView();
                 } else {
                     super.onManagerConnected(status);
@@ -275,8 +277,9 @@ public class CameraActivity extends AppCompatActivity
         mFilteringParams = (FilteringParams) intent.getParcelableExtra("filteringParams");
         mMarkingParams = (MarkingParams) intent.getParcelableExtra("markingParams");
         mColorSpace = ColorSpace.of(intent.getIntExtra("colorSpace", -1));
+        mThresholdingParams = (ThresholdingParams) intent.getParcelableExtra("thresholdingParams");
         mImageProcessor = ImageProcessor.builder()
-                .thresholdingParams((ThresholdingParams) intent.getParcelableExtra("thresholdingParams"))
+                .thresholdingParams(mThresholdingParams)
                 .edgeDetectionParams(mEdgeDetectionParams)
                 .filteringParams(mFilteringParams)
                 .markingParams(mMarkingParams)

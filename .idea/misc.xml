@@ -30,7 +30,9 @@
         <entry key="app/src/main/res/layout/value_slider_layout.xml" value="0.2368659420289855" />
         <entry key="app/src/main/res/layout/video_cardview.xml" value="0.1" />
         <entry key="app/src/main/res/layout/video_details.xml" value="0.335" />
-        <entry key="app/src/main/res/layout/video_layout.xml" value="0.15" />
+        <entry key="app/src/main/res/layout/video_layout.xml" value="0.1" />
+        <entry key="app/src/main/res/menu/main_top_bar_menu.xml" value="0.12685185185185185" />
+        <entry key="app/src/main/res/menu/video_top_bar_menu.xml" value="0.12685185185185185" />
       </map>
     </option>
   </component>

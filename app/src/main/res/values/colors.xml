@@ -10,5 +10,6 @@
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
     <color name="grey">#41353535</color>
+    <color name="red">#FF5656</color>
     <color name="mtrl_textinput_default_box_stroke_color" tools:override="true">#1F3168</color>
 </resources>

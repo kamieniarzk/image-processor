@@ -5,6 +5,9 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.view.View;
+import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -48,8 +51,6 @@ public class VideoActivity extends AppCompatActivity {
     private AnyChartView mChartView;
     private Cartesian mCartesian;
     private Pie mPie;
-    private boolean mChartSet;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,17 +60,32 @@ public class VideoActivity extends AppCompatActivity {
         initializeView();
         initializeConfigDetails();
         initializeChart1();
-        initializeChart2();
+//        initializeChart2();
     }
 
     private void initializeView() {
         MaterialToolbar topBar = findViewById(R.id.recordingDetailsTopBar);
         topBar.setNavigationOnClickListener(view -> finish());
+        topBar.setOnMenuItemClickListener(item -> {
+            deleteVideo();
+            return true;
+        });
         ImageView videoImageView = findViewById(R.id.videoThumbnail);
         videoImageView.setOnClickListener(view -> startVideo());
         try {
             Glide.with(this).load(mVideoUri).into(videoImageView);
         } catch (Exception e) {
+        }
+    }
+
+    private void deleteVideo() {
+        File file = new File(mVideoUri.getPath());
+        if (file.exists()) {
+            if (file.delete()) {
+                finish();
+            } else {
+                Toast.makeText(this, "Could not delete video", Toast.LENGTH_LONG).show();
+            }
         }
     }
 
@@ -101,7 +117,7 @@ public class VideoActivity extends AppCompatActivity {
 
     private void initializeChart1() {
         AnyChartView anyChartView = findViewById(R.id.any_chart_view);
-////        anyChartView.setProgressBar(findViewById(R.id.progress_bar));
+//        anyChartView.setProgressBar(findViewById(R.id.progress_bar));
         APIlib.getInstance().setActiveAnyChartView(anyChartView);
 //        ChartCredits.instantiate().enabled(false);
 
@@ -145,9 +161,9 @@ public class VideoActivity extends AppCompatActivity {
     }
 
     private void initializeChart2() {
-//        AnyChartView anyChartView = findViewById(R.id.any_chart_view1);
-////        anyChartView.setProgressBar(findViewById(R.id.progress_bar1));
-//        APIlib.getInstance().setActiveAnyChartView(anyChartView);
+        AnyChartView anyChartView = findViewById(R.id.any_chart_view);
+//        anyChartView.setProgressBar(findViewById(R.id.progress_bar1));
+        APIlib.getInstance().setActiveAnyChartView(anyChartView);
 
         Pie pie = AnyChart.pie();
 
@@ -159,21 +175,17 @@ public class VideoActivity extends AppCompatActivity {
         });
 
         List<DataEntry> data = new ArrayList<>();
-        data.add(new ValueDataEntry("Apples", 6371664));
-        data.add(new ValueDataEntry("Pears", 789622));
-        data.add(new ValueDataEntry("Bananas", 7216301));
-        data.add(new ValueDataEntry("Grapes", 1486621));
-        data.add(new ValueDataEntry("Oranges", 1200000));
+        data.add(new ValueDataEntry("Filtering", mVideoMetadata.getTimingMetrics().getFilteringTime()));
+        data.add(new ValueDataEntry("Segmentation", mVideoMetadata.getTimingMetrics().getSegmentationTime()));
+        data.add(new ValueDataEntry("Marking", mVideoMetadata.getTimingMetrics().getMarkingTime()));
 
         pie.data(data);
-
-        pie.title("Fruits imported in 2015 (in kg)");
 
         pie.labels().position("outside");
 
         pie.legend().title().enabled(true);
         pie.legend().title()
-                .text("Retail channels")
+                .text("Processing time distribution")
                 .padding(0d, 0d, 10d, 0d);
 
         pie.legend()
@@ -182,6 +194,7 @@ public class VideoActivity extends AppCompatActivity {
                 .align(Align.CENTER);
 
         mPie = pie;
+        anyChartView.setChart(mPie);
     }
 
     private void initializeConfigDetails() {
